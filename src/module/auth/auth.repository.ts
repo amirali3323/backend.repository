@@ -35,11 +35,9 @@ export class AuthRepository implements IAuthRepository {
             { password: newPassword },
             { where: { id: userId } },
         );
-
-        if (updatedRows === 0) {
-            throw new Error('User not found');
-        }
     }
+
+    
 
     async getAll(): Promise<User[]> {
         return await this.userModel.findAll();
