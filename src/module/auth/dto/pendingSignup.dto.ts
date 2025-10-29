@@ -1,7 +1,6 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, MinLength } from 'class-validator'
-import { UserRole } from '../entities/user.entity'
+import { IsEmail, IsNotEmpty, IsPhoneNumber, IsString, MinLength } from 'class-validator'
 
-export class SignupDto {
+export class PendingSignupDto {
     @IsString()
     @IsNotEmpty()
     name: string;
@@ -13,10 +12,6 @@ export class SignupDto {
 
     @IsPhoneNumber('IR', { message: 'invalid phoneNumber Iranian' })
     phoneNumber: string;
-
-    @IsEnum(UserRole)
-    @IsOptional()
-    role?: UserRole = UserRole.USER;
 
     @IsEmail()
     email: string;

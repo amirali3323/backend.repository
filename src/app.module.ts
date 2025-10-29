@@ -6,6 +6,7 @@ import { PostModule } from './module/post/post.module';
 import { LocationModule } from './module/location/location.module';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { ConfigModule, ConfigService } from '@nestjs/config'
+import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
   imports: [
@@ -27,6 +28,39 @@ import { ConfigModule, ConfigService } from '@nestjs/config'
         logging: false,
       }),
       inject: [ConfigService]
+    }),
+    SequelizeModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => ({
+        dialect: 'mysql',
+        host: config.get('DB_HOST'),
+        port: config.get('DB_PORT'),
+        username: config.get('DB_USER'),
+        password: config.get('DB_PASS'),
+        database: config.get('DB_DATABASE'),
+        autoLoadModels: true,
+        synchronize: true,
+        logging: false,
+      }),
+      inject: [ConfigService]
+    }),
+    MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        transport: {
+          host: 'smtp.gmail.com',
+          port: 465,
+          secure: true,
+          auth: {
+            user: config.get('MAIL_USER'),
+            pass: config.get('MAIL_PASS'),
+          },
+        },
+        defaults: {
+          from: `"Peidamishe" <${config.get('MAIL_USER')}>`,
+        },
+      }),
     }),
     AuthModule,
     PostModule,

@@ -6,11 +6,14 @@ import { User } from './entities/user.entity';
 import { AuthRepository } from './auth.repository';
 import { HashRepository } from 'src/common/repositories/hash.repository'
 import { CustomJwtService } from 'src/common/services/jwt.service';
+import { PendingSignupRepository } from './pendingSignup.repositort';
+import { MailService } from 'src/common/services/mail.service';
+import { PendingSignup } from './entities/pendingsignup.entity';
 
 @Module({
-  imports: [SequelizeModule.forFeature([User])],
-  exports: [SequelizeModule, AuthService, CustomJwtService],
+  imports: [SequelizeModule.forFeature([User, PendingSignup])],
+  exports: [SequelizeModule, AuthService, CustomJwtService, MailService],
   controllers: [AuthController],
-  providers: [AuthService, AuthRepository, HashRepository, CustomJwtService],
+  providers: [AuthService, AuthRepository, HashRepository, CustomJwtService, PendingSignupRepository, MailService],
 })
 export class AuthModule {}

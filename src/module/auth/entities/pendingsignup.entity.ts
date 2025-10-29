@@ -1,29 +1,20 @@
-import {
-    Table, Column, Model, DataType, HasMany, BelongsTo,
-} from 'sequelize-typescript'
-import { Post } from 'src/module/post/entities/post.entity';
+import { Table, Column, Model, DataType, } from 'sequelize-typescript'
 
 export enum UserRole {
     ADMIN = 'admin',
     USER = 'user',
 }
-@Table({ tableName: 'users' })
-export class User extends Model<
-    User,
+@Table({ tableName: 'pendingsignup' })
+export class PendingSignup extends Model<
+    PendingSignup,
     {
         name: string;
         password: string;
         phoneNumber: string;
         email: string;
+        code: string;
     }
 > {
-
-    @Column({
-        type: DataType.ENUM(...Object.values(UserRole)),
-        allowNull: false,
-        defaultValue: UserRole.USER,
-    })
-    declare role: UserRole;
 
     @Column({
         type: DataType.STRING,
@@ -54,11 +45,7 @@ export class User extends Model<
 
     @Column({
         type: DataType.STRING,
-        allowNull: true,
+        allowNull: false,
     })
-    declare avatarUrl?: string;
-
-    @HasMany(() => Post)
-    posts: Post[];
-
+    declare code: string;
 }

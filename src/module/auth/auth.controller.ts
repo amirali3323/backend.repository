@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { SignupDto } from './dto/createUser.dto';
 import { LoginUserDto } from './dto/loginUser.dto';
 import type { Response } from 'express';
+import { VerifyEmailDto } from './dto/verifyEmail.dto';
 
 @Controller('api/auth')
 export class AuthController {
@@ -10,18 +11,19 @@ export class AuthController {
 
   @Post('signup')
   async signUp(@Body() signupDto: SignupDto, @Res({ passthrough: true }) res: Response) {
-    const result = await this.authService.signUp(signupDto);
+    return await this.authService.signUp(signupDto);
+  }
+
+  @Post('verify-email')
+  async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto, @Res({ passthrough: true }) res: Response) {
+    const result = await this.authService.verifyEmail(verifyEmailDto);
     res.cookie('access-token', result.token, {
       httpOnly: true,
       secure: false,
       sameSite: 'lax',
       maxAge: 24 * 60 * 60 * 1000,
     })
-    
-    
-    return {
-      message: 'signup successful'
-    }
+    return { message: 'Login successful', }
   }
 
   @Post('login')
@@ -35,8 +37,6 @@ export class AuthController {
       maxAge: 24 * 60 * 60 * 1000,
     })
 
-    return {
-      message: 'Login successful',
-    }
+    return { message: 'Login successful', }
   }
 }

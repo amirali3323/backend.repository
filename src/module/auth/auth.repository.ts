@@ -10,12 +10,10 @@ export class AuthRepository implements IAuthRepository {
 
     ) { }
     async createUser(data: {
-        role?: UserRole,
-        userName: string,
+        name: string,
         password: string,
         phoneNumber: string,
-        email?: string,
-        profile?: string,
+        email: string,
     }): Promise<User> {
         return await this.userModel.create(data);
     }
@@ -26,10 +24,6 @@ export class AuthRepository implements IAuthRepository {
 
     async findByPhoneNumber(phoneNumber: string): Promise<User | null> {
         return await this.userModel.findOne({ where: { phoneNumber } })
-    }
-
-    async findByUsername(userName: string): Promise<User | null> {
-        return await this.userModel.findOne({ where: { userName } });
     }
 
     async findByEmail(email: string): Promise<User | null> {
