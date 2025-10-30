@@ -21,6 +21,7 @@ export class AuthController {
   @ApiBody({ type: SignupDto })
   @Post('signup')
   async signUp(@Body() signupDto: SignupDto, @Res({ passthrough: true }) res: Response) {
+    console.log('hi')
     return await this.authService.signUp(signupDto);
   }
 

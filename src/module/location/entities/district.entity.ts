@@ -3,18 +3,13 @@ import { City } from "./citis.entity";
 import { Post } from "src/module/post/entities/post.entity";
 import { PostDistrict } from "./postDistrict.entity";
 
-@Table({ tableName: 'Districts' })
-export class District extends Model<District,
-    {
-        name: string,
-        cityId: number,
-    }
-> {
+@Table({ tableName: 'districts' })
+export class District extends Model<District> {
     @Column({
         type: DataType.STRING,
         allowNull: false,
     })
-    name: string;
+    districtName: string;
 
     @ForeignKey(() => City)
     @Column

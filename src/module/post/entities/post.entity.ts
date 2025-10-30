@@ -11,12 +11,24 @@ export enum PostType {
 }
 
 export enum StatusPost {
-    ACTIVE = 'active',
-    INACTIVE = 'inactive',
-    RESOLVED = 'resolved',
+    PENDING = 'PENDING',
+    APPROVED = 'APPROVED',
+    REJECTED = 'REJECTED',
+    RESOLVED = 'RESOLVED',
 }
 @Table({ tableName: 'Posts' })
-export class Post extends Model<Post> {
+export class Post extends Model<Post,
+    {
+        title: string,
+        description?: string;
+        type: PostType,
+        mainImage?: string,
+        extraImages?: string[],
+        userId: number,
+        subCategoryId: number,
+        districtIds: number[],
+    }
+> {
     @Column({
         type: DataType.STRING,
         allowNull: false,
@@ -38,15 +50,15 @@ export class Post extends Model<Post> {
     @Column({
         type: DataType.ENUM(...Object.values(StatusPost)),
         allowNull: false,
-        defaultValue: StatusPost.ACTIVE,
+        defaultValue: StatusPost.PENDING,
     })
-    status: StatusPost;
+    status?: StatusPost;
 
     @Column({
         type: DataType.STRING,
         allowNull: true,
     })
-    image: string;
+    mainImage: string;
 
     @HasMany(() => PostImage)
     images: PostImage[];

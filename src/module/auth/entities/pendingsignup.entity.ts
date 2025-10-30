@@ -19,7 +19,6 @@ export class PendingSignup extends Model<
     @Column({
         type: DataType.STRING,
         allowNull: false,
-        unique: true,
     })
     declare name: string;
 

@@ -2,10 +2,7 @@ import { Table, Column, DataType, Model, HasMany, AllowNull, BelongsTo, ForeignK
 import { District } from "./district.entity";
 
 @Table({ tableName: 'Citis' })
-export class City extends Model<
-    City,
-    { name: string }
-> {
+export class City extends Model<City> {
 
     @Column({
         type: DataType.STRING,

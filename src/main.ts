@@ -22,7 +22,15 @@ async function bootstrap() {
     forbidNonWhitelisted: true,
     transform: true,
   }))
+
+  // app.enableCors({
+  //   origin: '*'
+  // })
   app.use(cookieParser());
-  await app.listen(process.env.PORT ?? 3000);
+  const port = 3000;
+  const host = '0.0.0.0';
+  app.listen(port, host, () => {
+    console.log(`Server running on http://${host}:${port}`);
+  });
 }
 bootstrap();

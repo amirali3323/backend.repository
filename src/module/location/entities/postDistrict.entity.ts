@@ -4,6 +4,11 @@ import { District } from "./district.entity";
 
 @Table({ tableName: 'PostDistricts' })
 export class PostDistrict extends Model<PostDistrict> {
-  @ForeignKey(() => Post) @Column postId: number;
-  @ForeignKey(() => District) @Column districtId: number;
+  @ForeignKey(() => Post)
+  @Column
+  postId: number;
+
+  @ForeignKey(() => District)
+  @Column
+  districtId: number;
 }

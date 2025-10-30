@@ -7,6 +7,7 @@ export class SubCategory extends Model<SubCategory> {
     @Column({
         type: DataType.STRING,
         allowNull: false,
+        unique: true,
     })
     subCategoryName: string;
     

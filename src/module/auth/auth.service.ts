@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { SignupDto } from './dto/signupUser.dto';
 import { AuthRepository } from './auth.repository';
-import { AppException } from 'src/common/AppException';
+import { AppException } from 'src/common/exceptions/AppException';
 import { User, UserRole } from './entities/user.entity';
 import { LoginUserDto } from './dto/loginUser.dto';
 import { BcryptService } from 'src/common/services/bcrypt.service';
@@ -22,6 +22,10 @@ export class AuthService {
     private readonly pendingSignupRepository: PendingSignupRepository,
     private readonly mailService: MailService,
   ) { }
+
+  async findByPk(id: number) {
+    return await this.authRepository.findById(id);
+  }
 
   async signUp(pendingSignupDto: PendingSignupDto) {
     const exsistphoneNumber = await this.authRepository.findByPhoneNumber(pendingSignupDto.phoneNumber);
