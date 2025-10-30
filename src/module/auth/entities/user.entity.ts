@@ -1,6 +1,4 @@
-import {
-    Table, Column, Model, DataType, HasMany, BelongsTo,
-} from 'sequelize-typescript'
+import { Table, Column, Model, DataType, HasMany, BelongsTo, } from 'sequelize-typescript'
 import { Post } from 'src/module/post/entities/post.entity';
 
 export enum UserRole {

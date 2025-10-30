@@ -1,14 +1,9 @@
-import {
-    Table, Column, Model, DataType, HasMany, BelongsTo,
-    AllowNull,
-    ForeignKey,
-    BelongsToMany,
-} from 'sequelize-typescript'
+import { Table, Column, Model, DataType, HasMany, BelongsTo, ForeignKey, BelongsToMany, } from 'sequelize-typescript'
 import { User } from 'src/module/auth/entities/user.entity';
-import { City } from 'src/module/location/entities/citis.entity';
 import { District } from 'src/module/location/entities/district.entity';
-import { PostCity } from 'src/module/location/entities/Postcity.entity';
 import { PostDistrict } from 'src/module/location/entities/postDistrict.entity';
+import { PostImage } from './postImage.entity';
+import { SubCategory } from './subCategory.entity';
 
 export enum PostType {
     LOST = 'lost',
@@ -53,17 +48,23 @@ export class Post extends Model<Post> {
     })
     image: string;
 
-    @ForeignKey(() => User)
-    @Column
-    userId: number;
+    @HasMany(() => PostImage)
+    images: PostImage[];
 
     @BelongsTo(() => User)
     user: User;
 
-    @BelongsToMany(() => City, () => PostCity)
-    citis: City[];
+    @ForeignKey(() => User)
+    @Column
+    userId: number;
 
     @BelongsToMany(() => District, () => PostDistrict)
     districts: District[];
 
+    @BelongsTo(() => SubCategory)
+    subCategory: SubCategory;
+
+    @ForeignKey(() => SubCategory)
+    @Column
+    subCategoryId: number;
 }

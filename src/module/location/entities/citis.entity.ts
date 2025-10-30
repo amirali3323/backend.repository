@@ -1,7 +1,5 @@
 import { Table, Column, DataType, Model, HasMany, AllowNull, BelongsTo, ForeignKey, BelongsToMany } from "sequelize-typescript";
 import { District } from "./district.entity";
-import { Post } from "src/module/post/entities/post.entity";
-import { PostCity } from "./Postcity.entity";
 
 @Table({ tableName: 'Citis' })
 export class City extends Model<
@@ -18,7 +16,4 @@ export class City extends Model<
 
     @HasMany(() => District)
     districts: District[];
-
-    @BelongsToMany(() => Post, () => PostCity)
-    posts: Post[];
 }
