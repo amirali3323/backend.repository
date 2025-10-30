@@ -1,4 +1,4 @@
-import { SignupDto } from "../dto/createUser.dto";
+import { SignupDto } from "../dto/signupUser.dto";
 import { User, UserRole } from "../entities/user.entity";
 
 export interface IAuthRepository {

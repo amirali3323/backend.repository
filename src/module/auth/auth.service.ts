@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { SignupDto } from './dto/createUser.dto';
+import { SignupDto } from './dto/signupUser.dto';
 import { AuthRepository } from './auth.repository';
 import { AppException } from 'src/common/AppException';
 import { User, UserRole } from './entities/user.entity';

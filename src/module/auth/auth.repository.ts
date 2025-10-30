@@ -1,4 +1,4 @@
-import { SignupDto } from "./dto/createUser.dto";
+import { SignupDto } from "./dto/signupUser.dto";
 import { User, UserRole } from "./entities/user.entity";
 import { InjectModel } from "@nestjs/sequelize";
 import { IAuthRepository } from "./interfaces/auth.repository.interface";
