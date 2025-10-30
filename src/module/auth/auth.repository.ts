@@ -37,7 +37,10 @@ export class AuthRepository implements IAuthRepository {
         );
     }
 
-    
+    async updateAvatarUrl(filename: string, id: number) {
+        return await this.userModel.update({ avatarUrl: filename }, { where: { id } })
+    }
+
 
     async getAll(): Promise<User[]> {
         return await this.userModel.findAll();

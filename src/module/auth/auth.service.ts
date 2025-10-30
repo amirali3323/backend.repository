@@ -113,6 +113,13 @@ export class AuthService {
     return { message: 'Password has been successfully reset' };
   }
 
+  async updateProfileImage(userId: number, filename: string) {
+    const user = await this.authRepository.findById(userId);
+    if (!user) throw new AppException('User not found', HttpStatus.NOT_FOUND);
+
+    return await this.authRepository.updateAvatarUrl(filename, userId);
+  }
+
   async getUser(id: number) {
     const user = await this.authRepository.findById(id);
     if (!user) throw new AppException('User not found', HttpStatus.NOT_FOUND);

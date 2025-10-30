@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Delete, Res, HttpCode, HttpStatus, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Res, Query, UseGuards, UseInterceptors, UploadedFile, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/createUser.dto';
 import { LoginUserDto } from './dto/loginUser.dto';
@@ -6,6 +6,11 @@ import type { Response } from 'express';
 import { VerifyEmailDto } from './dto/verifyEmail.dto';
 import { ForgotPasswordDto } from './dto/forgotPassword.dto';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
+import { RoleGuard } from 'src/common/guards/role.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { createMulterConfig } from 'src/common/config/multer.config';
+import type { Request } from 'express';
 
 @Controller('api/auth')
 export class AuthController {
@@ -50,5 +55,16 @@ export class AuthController {
   @Post('reset-password')
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto, @Query('token') token: string) {
     return await this.authService.resetPassword(resetPasswordDto, token)
+  }
+
+  @UseGuards(RoleGuard)
+  @Roles('user')
+  @Post('avatar')
+  @UseInterceptors(FileInterceptor('file', createMulterConfig('./uploads/avatars')))
+  async uploadProfileImage(@UploadedFile() file: Express.Multer.File, @Req() req: Request) {
+    const filename = file.filename;
+    await this.authService.updateProfileImage(req['userId'], filename);
+
+    return { message: 'Profile image uploaded successfully', }
   }
 }
