@@ -8,7 +8,7 @@ export class Category extends Model<Category> {
         allowNull: false,
         unique: true,
     })
-    categoryName: string;
+    declare categoryName: string;
 
     @HasMany(()=> SubCategory)
     subCategorys: SubCategory[];

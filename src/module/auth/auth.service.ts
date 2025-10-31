@@ -52,6 +52,7 @@ export class AuthService {
   }
 
   async verifyEmail(verifyEmailDto: VerifyEmailDto) {
+    console.log('In Service')
     const { email, code } = verifyEmailDto;
     const pendingSignup = await this.pendingSignupRepository.findByEmail(email);
     if (!pendingSignup) throw new AppException('No pending signup found for this email', HttpStatus.NOT_FOUND);

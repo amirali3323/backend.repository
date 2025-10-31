@@ -45,6 +45,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'User logged in successfully' })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   async login(@Body() loginUserDto: LoginUserDto, @Res({ passthrough: true }) res: Response) {
+    console.log('In Controller')
     const result = await this.authService.login(loginUserDto);
 
     res.cookie('access-token', result.token, {

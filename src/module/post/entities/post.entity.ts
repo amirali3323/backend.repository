@@ -1,7 +1,7 @@
 import { Table, Column, Model, DataType, HasMany, BelongsTo, ForeignKey, BelongsToMany, } from 'sequelize-typescript'
 import { User } from 'src/module/auth/entities/user.entity';
 import { District } from 'src/module/location/entities/district.entity';
-import { PostDistrict } from 'src/module/location/entities/postDistrict.entity';
+import { PostDistrict } from './postDistrict.entity'; 
 import { PostImage } from './postImage.entity';
 import { SubCategory } from './subCategory.entity';
 
@@ -23,60 +23,58 @@ export class Post extends Model<Post,
         description?: string;
         type: PostType,
         mainImage?: string,
-        extraImages?: string[],
         userId: number,
         subCategoryId: number,
-        districtIds: number[],
     }
 > {
     @Column({
         type: DataType.STRING,
         allowNull: false,
     })
-    title: string;
+    declare title: string;
 
     @Column({
         type: DataType.TEXT,
         allowNull: true,
     })
-    description: string;
+    declare description: string;
 
     @Column({
         type: DataType.ENUM(...Object.values(PostType)),
         allowNull: false,
     })
-    type: PostType;
+    declare type: PostType;
 
     @Column({
         type: DataType.ENUM(...Object.values(StatusPost)),
         allowNull: false,
         defaultValue: StatusPost.PENDING,
     })
-    status?: StatusPost;
+    declare status: StatusPost;
 
     @Column({
         type: DataType.STRING,
         allowNull: true,
     })
-    mainImage: string;
+    declare mainImage: string;
 
     @HasMany(() => PostImage)
-    images: PostImage[];
+    declare images: PostImage[];
 
     @BelongsTo(() => User)
-    user: User;
+    declare user: User;
 
     @ForeignKey(() => User)
     @Column
-    userId: number;
+    declare userId: number;
 
     @BelongsToMany(() => District, () => PostDistrict)
-    districts: District[];
+    declare districts: District[];
 
     @BelongsTo(() => SubCategory)
-    subCategory: SubCategory;
+    declare subCategory: SubCategory;
 
     @ForeignKey(() => SubCategory)
     @Column
-    subCategoryId: number;
+    declare subCategoryId: number;
 }

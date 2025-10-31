@@ -3,6 +3,8 @@ import { CreateCityDto } from './dto/createCity.dto';
 import { LocationRepository } from './location.repository';
 import { AppException } from 'src/common/exceptions/AppException';
 import { CreateDistrictDto } from './dto/createDistrict.dto';
+import { Op } from 'sequelize';
+import { District } from './entities/district.entity';
 
 
 @Injectable()
@@ -24,4 +26,12 @@ export class LocationService {
   //   return await this.locationRepository.createDistrict({ name: createDistrictDto.name, cityId: createDistrictDto.cityId });
   // }
 
+  async getAllDistrictIdsWithNames(districtNames: string[]): Promise<number[]> {
+    const districts = await this.locationRepository.findALlDistricts({
+      where: { districtName: { [Op.in]: districtNames } },
+      attributes: ['id'],
+      raw: true,
+    });
+    return districts.map(d => d.id);
+  }
 }
