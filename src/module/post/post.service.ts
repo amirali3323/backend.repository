@@ -19,14 +19,18 @@ export class PostService {
   ) { }
 
   async createPost(createPostDto: CreatePostDto, userId: number) {
-    const { title, description, type, mainImage, extraImages, subCategoryName, districtNames } = createPostDto;
+    const { title, description, type, mainImage, extraImages, category, locationInputs } = createPostDto;
     const exsistUser = await this.authService.findByPk(userId);
     if (!exsistUser) throw new AppException('User not found', HttpStatus.NOT_FOUND);
 
-    const subCategory = await this.postRepository.findSubCategoryByName(subCategoryName);
+    const [categoryName, subCategoryName] = category.split('-');
+
+    const subCategory = await this.postRepository.findSubCategoryByName(categoryName, subCategoryName);
     if (!subCategory) throw new AppException('SubCategory not found', HttpStatus.NOT_FOUND);
 
-    const districtIds = await this.locationService.getAllDistrictIdsWithNames(districtNames);
+    const districtIds = await this.locationService.getAllDistrictIdsWithNames(locationInputs);
+    if(!districtIds.length) throw new AppException('location not found', HttpStatus.NOT_FOUND);
+    console.log(districtIds)
 
     const newPost = await this.postRepository.create({ title, description, type, mainImage, subCategoryId: subCategory.id, userId })
 
@@ -38,5 +42,11 @@ export class PostService {
       await this.postDistricRepository.create(newPost.id, districtId)
     }
     return { message: 'Created post successfully' }
+  }
+
+  async getPost(id: number) {
+    const post = await this.postRepository.getPost(id);
+    if (!post || post.status === StatusPost.PENDING || StatusPost.REJECTED) throw new AppException('Post not found', HttpStatus.NOT_FOUND);
+    return post;
   }
 }

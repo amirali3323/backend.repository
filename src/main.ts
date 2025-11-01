@@ -16,7 +16,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api-docs', app, document); // صفحه HTML Swagger
+  SwaggerModule.setup('api-docs', app, document);
 
 
   app.useGlobalPipes(new ValidationPipe({
@@ -26,7 +26,7 @@ async function bootstrap() {
   }))
 
   app.enableCors({
-    origin: 'http://172.16.112.95:3000',
+    origin: 'http://172.16.112.76:3000',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],

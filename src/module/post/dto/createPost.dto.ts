@@ -1,6 +1,6 @@
 import { IsString, IsNotEmpty, IsOptional, IsEnum, IsArray, ArrayNotEmpty, ArrayUnique, isNotEmpty, } from "class-validator";
 import { PostType } from "../entities/post.entity";
-import { isNullOrUndefined } from "util";
+import { LocationInputDto } from "./locationInput.dto";
 
 export class CreatePostDto {
     @IsString()
@@ -22,10 +22,11 @@ export class CreatePostDto {
     @IsString()
     declare extraImages: string[];
 
-    @IsNotEmpty({ message: 'districtNames is required' })
-    declare districtNames: string[];
+    // @IsArray()
+    @IsNotEmpty()
+    locationInputs: LocationInputDto[];
 
     @IsString({ message: 'SubCategoryName must be a string' })
     @IsNotEmpty({ message: 'SubCategoryName is required' })
-    declare subCategoryName: string;
+    declare category: string;
 }

@@ -13,9 +13,9 @@ export class PostImage extends Model<PostImage,{
     declare imageUrl: string;
 
     @BelongsTo(()=> Post)
-    post: Post;
+    declare post: Post;
 
     @ForeignKey(()=> Post)
     @Column
-    postId: number;
+    declare postId: number;
 }

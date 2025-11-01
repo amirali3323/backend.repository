@@ -1,7 +1,7 @@
-import { SignupDto } from "./dto/signupUser.dto";
-import { User, UserRole } from "./entities/user.entity";
+import { SignupDto } from "../dto/signupUser.dto"; 
+import { User, UserRole } from "../entities/user.entity";
 import { InjectModel } from "@nestjs/sequelize";
-import { IAuthRepository } from "./interfaces/auth.repository.interface";
+import { IAuthRepository } from "../interfaces/auth.repository.interface"; 
 
 export class AuthRepository implements IAuthRepository {
     constructor(

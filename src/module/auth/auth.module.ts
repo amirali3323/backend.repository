@@ -3,10 +3,10 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { User } from './entities/user.entity';
-import { AuthRepository } from './auth.repository';
+import { AuthRepository } from './repositories/auth.repository';
 import { BcryptService } from 'src/common/services/bcrypt.service';
 import { CustomJwtService } from 'src/common/services/jwt.service';
-import { PendingSignupRepository } from './pendingSignup.repositort';
+import { PendingSignupRepository } from './repositories/pendingSignup.repositort';
 import { MailService } from 'src/common/services/mail.service';
 import { PendingSignup } from './entities/pendingsignup.entity';
 

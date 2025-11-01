@@ -1,12 +1,11 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { SignupDto } from './dto/signupUser.dto';
-import { AuthRepository } from './auth.repository';
+import { AuthRepository } from './repositories/auth.repository';
 import { AppException } from 'src/common/exceptions/AppException';
-import { User, UserRole } from './entities/user.entity';
 import { LoginUserDto } from './dto/loginUser.dto';
 import { BcryptService } from 'src/common/services/bcrypt.service';
 import { CustomJwtService } from 'src/common/services/jwt.service';
-import { PendingSignupRepository } from './pendingSignup.repositort';
+import { PendingSignupRepository } from './repositories/pendingSignup.repositort'; 
 import { MailService } from 'src/common/services/mail.service';
 import { PendingSignupDto } from './dto/pendingSignup.dto';
 import { VerifyEmailDto } from './dto/verifyEmail.dto';
@@ -39,7 +38,7 @@ export class AuthService {
 
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-    const pendingUser = await this.pendingSignupRepository.createUser({
+    await this.pendingSignupRepository.createUser({
       name: pendingSignupDto.name,
       password: hashedPassword,
       phoneNumber: pendingSignupDto.phoneNumber,

@@ -7,7 +7,6 @@ export class SubCategory extends Model<SubCategory> {
     @Column({
         type: DataType.STRING,
         allowNull: false,
-        unique: true,
     })
     declare subCategoryName: string;
     
@@ -15,10 +14,10 @@ export class SubCategory extends Model<SubCategory> {
     declare category: Category;
 
     @ForeignKey(()=> Category)
-    categoryId: number;
+    declare categoryId: number;
 
     @HasMany(()=> Post)
-    posts: Post[];
+    declare posts: Post[];
 
 
     

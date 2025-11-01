@@ -1,4 +1,4 @@
-import { PendingSignup } from "./entities/pendingsignup.entity";
+import { PendingSignup } from "../entities/pendingsignup.entity"; 
 import { InjectModel } from "@nestjs/sequelize";
 
 export class PendingSignupRepository {

@@ -9,15 +9,15 @@ export class District extends Model<District> {
         type: DataType.STRING,
         allowNull: false,
     })
-    districtName: string;
+    declare districtName: string;
 
     @ForeignKey(() => City)
     @Column
-    cityId: number;
+    declare cityId: number;
 
     @BelongsTo(() => City)
-    city: City;
+    declare city: City;
 
     @BelongsToMany(() => Post, () => PostDistrict)
-    posts: Post[];
+    declare posts: Post[];
 }

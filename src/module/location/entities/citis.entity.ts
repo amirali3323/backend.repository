@@ -9,7 +9,7 @@ export class City extends Model<City> {
         allowNull: false,
         unique: true,
     })
-    declare name: string
+    declare cityName: string
 
     @HasMany(() => District)
     districts: District[];
