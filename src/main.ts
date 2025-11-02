@@ -26,7 +26,7 @@ async function bootstrap() {
   }))
 
   app.enableCors({
-    origin: 'http://172.16.112.76:3000',
+    origin: 'http://172.16.112.126:3000',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -34,9 +34,9 @@ async function bootstrap() {
 
   app.use(cookieParser());
   const port = 3001;
-  // const host = '0.0.0.0';
-  app.listen(port,   () => {
-    // console.log(`Server running on http://${host}:${port}`);
+  const host = '0.0.0.0';
+  app.listen(port, host, () => {
+    console.log(`Server running on http://${host}:${port}`);
   });
 }
 bootstrap();

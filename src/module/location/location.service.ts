@@ -6,7 +6,7 @@ import { CreateDistrictDto } from './dto/createDistrict.dto';
 import { Op } from 'sequelize';
 import { District } from './entities/district.entity';
 import { LocationInputDto } from '../post/dto/locationInput.dto';
-import { City } from './entities/citis.entity';
+import { Province } from './entities/province.entity';
 
 
 @Injectable()
@@ -17,9 +17,9 @@ export class LocationService {
     const districts = await this.locationRepository.findALlDistricts({
       include: [
         {
-          model: City,
+          model: Province,
           where: {
-            cityName: { [Op.in]: locationInputs.map(loc => loc.cityName) },
+            provinceName: { [Op.in]: locationInputs.map(loc => loc.provinceName) },
           },
           attributes: [],
         },

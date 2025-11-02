@@ -51,17 +51,14 @@ export class AuthService {
   }
 
   async verifyEmail(verifyEmailDto: VerifyEmailDto) {
-    console.log('In Service')
     const { email, code } = verifyEmailDto;
-    const pendingSignup = await this.pendingSignupRepository.findByEmail(email);
-    if (!pendingSignup) throw new AppException('No pending signup found for this email', HttpStatus.NOT_FOUND);
+    const pendingSignup = await this.pendingSignupRepository.verifyEmail(email, code);
+    if (!pendingSignup) throw new AppException('Invalid verification code', HttpStatus.NOT_FOUND);
 
     if (dayjs().diff(pendingSignup.createdAt, 'minute') > 10) {
       await this.pendingSignupRepository.delete(pendingSignup.id);
       throw new AppException('Verification code has expired. Please sign up again.', HttpStatus.GONE);
     }
-
-    if (pendingSignup.code !== code) throw new AppException('Invalid verification code', HttpStatus.BAD_REQUEST);
 
     const newUser = await this.authRepository.createUser({
       name: pendingSignup.name,

@@ -1,9 +1,5 @@
-import { CreateCityDto } from "./dto/createCity.dto";
-import { CreateDistrictDto } from "./dto/createDistrict.dto";
-import { City } from "./entities/citis.entity";
 import { District } from "./entities/district.entity";
 import { InjectModel } from "@nestjs/sequelize";
-import { ILocationRepository } from "./interfaces/location.repository.interface";
 import { Includeable, WhereOptions } from "sequelize";
 
 export class LocationRepository {

@@ -1,5 +1,5 @@
 import { Table, Column, DataType, Model, HasMany, AllowNull, ForeignKey, BelongsTo, BelongsToMany } from "sequelize-typescript";
-import { City } from "./citis.entity";
+import { Province } from "./province.entity";
 import { Post } from "src/module/post/entities/post.entity";
 import { PostDistrict } from "src/module/post/entities/postDistrict.entity"; 
 
@@ -11,12 +11,12 @@ export class District extends Model<District> {
     })
     declare districtName: string;
 
-    @ForeignKey(() => City)
+    @ForeignKey(() => Province)
     @Column
-    declare cityId: number;
+    declare provinceId: number;
 
-    @BelongsTo(() => City)
-    declare city: City;
+    @BelongsTo(() => Province)
+    declare province: Province;
 
     @BelongsToMany(() => Post, () => PostDistrict)
     declare posts: Post[];

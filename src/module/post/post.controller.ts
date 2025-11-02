@@ -1,12 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, UseInterceptors, UploadedFile, UploadedFiles, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Req, UseInterceptors, UploadedFiles, ParseIntPipe } from '@nestjs/common';
 import { PostService } from './post.service';
 import { RoleGuard } from 'src/common/guards/role.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { CreatePostDto } from './dto/createPost.dto';
-import type { Request } from 'express';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { createMulterConfig } from 'src/common/config/multer.config';
-import { pseudoRandomBytes } from 'crypto';
+import { OptionalGuard } from 'src/common/guards/optional.guard';
+import { BooleanString } from './entities/post.entity';
 
 @Controller('api/post')
 export class PostController {
@@ -28,11 +28,13 @@ export class PostController {
     const imageNames = images?.map((img) => img.filename) || []
     createPostDto.mainImage = imageNames[0];
     createPostDto.extraImages = imageNames.slice(1);
-    return await this.postService.createPost(createPostDto, req.user?.id);
+    return await this.postService.createPost(createPostDto, req.user.id);
   }
 
+  @UseGuards(OptionalGuard)
   @Get(':id')
-  async getPost(@Param('id', ParseIntPipe) postId: number) {
-    return await this.postService.getPost(postId);
+  async getPost(@Param('id', ParseIntPipe) postId: number, @Req() req?: any) {
+    return await this.postService.getPost(postId, req.user?.id);
   }
+
 }

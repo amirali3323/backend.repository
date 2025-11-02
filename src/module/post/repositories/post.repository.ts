@@ -3,16 +3,15 @@ import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
 import { District } from "../../location/entities/district.entity";
 import { SubCategory } from "../entities/subCategory.entity";
-import { City } from "src/module/location/entities/citis.entity";
+import { Province } from "src/module/location/entities/province.entity";
 import { Category } from "../entities/category.entity";
+import { PostImage } from "../entities/postImage.entity";
 
 @Injectable()
 export class PostRepository {
     constructor(
         @InjectModel(Post)
         private postModel: typeof Post,
-        @InjectModel(District)
-        private districtModel: typeof District,
         @InjectModel(SubCategory)
         private subCategoryModel: typeof SubCategory
     ) { }
@@ -38,6 +37,8 @@ export class PostRepository {
         mainImage?: string,
         userId: number,
         subCategoryId: number,
+        hidePhoneNumber: boolean,
+        isWillingToChat: boolean,
     }): Promise<Post> {
         return await this.postModel.create(data);
     }
@@ -50,7 +51,14 @@ export class PostRepository {
                     {
                         model: SubCategory,
                         attributes: ['subCategoryName'],
-                        required: true
+                        required: true,
+                        include: [
+                            {
+                                model: Category,
+                                attributes: ['categoryName'],
+                                required: true,
+                            }
+                        ]
                     },
                     {
                         model: District,
@@ -59,11 +67,15 @@ export class PostRepository {
                         required: true,
                         include: [
                             {
-                                model: City,
-                                attributes: ['cityName'],
+                                model: Province,
+                                attributes: ['provinceName'],
                                 required: true,
                             }
                         ]
+                    },
+                    {
+                        model: PostImage,
+                        attributes: ['imageUrl'],
                     }
                 ]
         })

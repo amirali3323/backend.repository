@@ -1,7 +1,7 @@
 import { Table, Column, Model, DataType, HasMany, BelongsTo, ForeignKey, BelongsToMany, } from 'sequelize-typescript'
 import { User } from 'src/module/auth/entities/user.entity';
 import { District } from 'src/module/location/entities/district.entity';
-import { PostDistrict } from './postDistrict.entity'; 
+import { PostDistrict } from './postDistrict.entity';
 import { PostImage } from './postImage.entity';
 import { SubCategory } from './subCategory.entity';
 
@@ -16,6 +16,11 @@ export enum StatusPost {
     REJECTED = 'REJECTED',
     RESOLVED = 'RESOLVED',
 }
+
+export enum BooleanString {
+    TRUE = 'true',
+    FALSE = 'false',
+}
 @Table({ tableName: 'Posts' })
 export class Post extends Model<Post,
     {
@@ -25,6 +30,8 @@ export class Post extends Model<Post,
         mainImage?: string,
         userId: number,
         subCategoryId: number,
+        hidePhoneNumber: boolean,
+        isWillingToChat: boolean,
     }
 > {
     @Column({
@@ -60,6 +67,20 @@ export class Post extends Model<Post,
 
     @HasMany(() => PostImage)
     declare images: PostImage[];
+
+    @Column({
+        type: DataType.BOOLEAN,
+        allowNull: false,
+        defaultValue: true,
+    })
+    declare isWillingToChat: boolean;
+
+    @Column({
+        type: DataType.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+    })
+    declare hidePhoneNumber: boolean;
 
     @BelongsTo(() => User)
     declare user: User;

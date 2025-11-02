@@ -31,14 +31,12 @@ export class PendingSignup extends Model<
     @Column({
         type: DataType.STRING,
         allowNull: false,
-        unique: true,
     })
     declare phoneNumber: string;
 
     @Column({
         type: DataType.STRING,
         allowNull: true,
-        unique: true
     })
     declare email: string;
 

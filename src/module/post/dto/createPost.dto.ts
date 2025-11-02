@@ -1,6 +1,9 @@
-import { IsString, IsNotEmpty, IsOptional, IsEnum, IsArray, ArrayNotEmpty, ArrayUnique, isNotEmpty, } from "class-validator";
-import { PostType } from "../entities/post.entity";
+import { IsString, IsNotEmpty, IsOptional, IsEnum, IsBoolean, } from "class-validator";
+import { BooleanString, PostType } from "../entities/post.entity";
 import { LocationInputDto } from "./locationInput.dto";
+import { Transform } from "class-transformer";
+
+
 
 export class CreatePostDto {
     @IsString()
@@ -22,11 +25,24 @@ export class CreatePostDto {
     @IsString()
     declare extraImages: string[];
 
-    // @IsArray()
     @IsNotEmpty()
     locationInputs: LocationInputDto[];
 
     @IsString({ message: 'SubCategoryName must be a string' })
     @IsNotEmpty({ message: 'SubCategoryName is required' })
     declare category: string;
+
+    @Transform(({ value }) =>
+        value === 'true' || value === true || value === 1 ? true : false,
+    )
+    @IsBoolean()
+    @IsOptional()
+    hidePhoneNumber: boolean = false;
+
+    @Transform(({ value }) =>
+        value === 'true' || value === true || value === 1 ? true : false,
+    )
+    @IsBoolean()
+    @IsOptional()
+    isWillingToChat: boolean = true;
 }

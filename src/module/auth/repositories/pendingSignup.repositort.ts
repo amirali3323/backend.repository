@@ -1,4 +1,4 @@
-import { PendingSignup } from "../entities/pendingsignup.entity"; 
+import { PendingSignup } from "../entities/pendingsignup.entity";
 import { InjectModel } from "@nestjs/sequelize";
 
 export class PendingSignupRepository {
@@ -19,6 +19,10 @@ export class PendingSignupRepository {
 
     async findByEmail(email: string): Promise<PendingSignup | null> {
         return await this.pendingUserModel.findOne({ where: { email } });
+    }
+
+    async verifyEmail(email: string, code: string) {
+        return await this.pendingUserModel.findOne({ where: { email, code, } });
     }
 
     async delete(id: number) {
