@@ -51,10 +51,12 @@ export class PostService {
     if (post.status === StatusPost.PENDING || post.status === StatusPost.REJECTED) {
       console.log('here')
       if (userId !== post.userId) {
-        console.log(userId);
-        console.log(post.userId)
         throw new AppException('Post not found', HttpStatus.NOT_FOUND);
       }
+    }
+    let phoneNumber: string | null = null;
+    if (!post.hidePhoneNumber) {
+      phoneNumber = await this.authService.getPhoneNumber(post.userId);
     }
     const plain = post.get({ plain: true })
     return {
@@ -69,7 +71,7 @@ export class PostService {
       })),
       category: plain.subCategory.category.categoryName,
       subCategory: plain.subCategory.subCategoryName,
-      hidePhoneNumber: plain.hidePhoneNumber,
+      phoneNumber,
       isWillingToChat: plain.isWillingToChat,
       districts: plain.districts?.map(d => ({
         districtName: d.districtName,

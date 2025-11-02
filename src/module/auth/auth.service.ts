@@ -5,13 +5,14 @@ import { AppException } from 'src/common/exceptions/AppException';
 import { LoginUserDto } from './dto/loginUser.dto';
 import { BcryptService } from 'src/common/services/bcrypt.service';
 import { CustomJwtService } from 'src/common/services/jwt.service';
-import { PendingSignupRepository } from './repositories/pendingSignup.repositort'; 
+import { PendingSignupRepository } from './repositories/pendingSignup.repository';
 import { MailService } from 'src/common/services/mail.service';
 import { PendingSignupDto } from './dto/pendingSignup.dto';
 import { VerifyEmailDto } from './dto/verifyEmail.dto';
 import dayjs from 'dayjs';
 import { ForgotPasswordDto } from './dto/forgotPassword.dto';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
+import { resendVerificationEmailDto } from './dto/resendVerificationEmail.dto';
 
 @Injectable()
 export class AuthService {
@@ -27,23 +28,22 @@ export class AuthService {
   }
 
   async signUp(pendingSignupDto: PendingSignupDto) {
-    const exsistphoneNumber = await this.authRepository.findByPhoneNumber(pendingSignupDto.phoneNumber);
+    const { email, name, password, phoneNumber } = pendingSignupDto
+    const exsistphoneNumber = await this.authRepository.findByPhoneNumber(phoneNumber);
     if (exsistphoneNumber) throw new AppException('PhoneNumber already exsist', HttpStatus.CONFLICT);
-    if (pendingSignupDto.email) {
-      const exsistEmail = await this.authRepository.findByEmail(pendingSignupDto.email);
+    if (email) {
+      const exsistEmail = await this.authRepository.findByEmail(email);
       if (exsistEmail) throw new AppException('Email already exsists!', HttpStatus.CONFLICT);
     }
 
-    const hashedPassword = await this.bcryptService.hash(pendingSignupDto.password);
+    const hashedPassword = await this.bcryptService.hash(password);
 
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
+    this.pendingSignupRepository.deleteByEmail(email);
+
     await this.pendingSignupRepository.createUser({
-      name: pendingSignupDto.name,
-      password: hashedPassword,
-      phoneNumber: pendingSignupDto.phoneNumber,
-      email: pendingSignupDto.email,
-      code: verificationCode,
+      name, password: hashedPassword, phoneNumber, email, code: verificationCode,
     });
 
     this.mailService.sendEmailVerification(pendingSignupDto.email, verificationCode);
@@ -73,8 +73,22 @@ export class AuthService {
     return { token };
   }
 
-  async login(loginUserDto: LoginUserDto) {
+  async resendVerificationEmail(body: resendVerificationEmailDto) {
+    const { email } = body;
+    console.log(email)
+    const pendingUser = await this.pendingSignupRepository.findLatestByEmail(email);
+    console.log(pendingUser)
+    if (!pendingUser) throw new AppException('User not found', HttpStatus.NOT_FOUND);
 
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    await this.pendingSignupRepository.updateVerifyCode(pendingUser.id, verificationCode);
+
+    this.mailService.sendEmailVerification(email, verificationCode);
+    return { message: 'A new verification code has been resent to your email.' };
+  }
+
+  async login(loginUserDto: LoginUserDto) {
     const exsistUser = await this.authRepository.findByEmail(loginUserDto.email);
     if (!exsistUser) throw new AppException('No account found with this email address', HttpStatus.NOT_FOUND);
 
@@ -91,25 +105,22 @@ export class AuthService {
     if (!exsistUser) throw new AppException('User not found', HttpStatus.NOT_FOUND);
 
     const token = await this.jwtService.sign(exsistUser.id, { expiresIn: '10m' });
-
-    await this.mailService.sendForgetPasswordEmail(email, token);
-
+    this.mailService.sendForgetPasswordEmail(email, token);
     return { message: 'Password reset link sent to your email.' };
   }
 
   async resetPassword(resetPasswordDto: ResetPasswordDto, token: string) {
-    if (!token) throw new AppException('Reset token is missing', HttpStatus.BAD_REQUEST)
     const { newPassword } = resetPasswordDto;
 
+    if (!token) throw new AppException('Reset token is missing', HttpStatus.BAD_REQUEST)
     const decoded = await this.jwtService.verify(token);
-    if (!decoded?.userId)
+    if (!decoded?.userId){
       throw new AppException('Invalid or expired token', HttpStatus.UNAUTHORIZED);
-
+    }
     const user = await this.authRepository.findById(decoded.userId);
     if (!user) throw new AppException('User not found', HttpStatus.NOT_FOUND);
 
     const hashed = await this.bcryptService.hash(newPassword);
-
     await this.authRepository.updatePassword(user.id, hashed);
     return { message: 'Password has been successfully reset' };
   }
@@ -133,5 +144,10 @@ export class AuthService {
     return users;
   }
 
+  async getPhoneNumber(id: number) {
+    const user = await this.authRepository.findById(id);
+    if (!user) throw new AppException('User not found', HttpStatus.NOT_FOUND);
+    return user.phoneNumber;
+  }
 }
 

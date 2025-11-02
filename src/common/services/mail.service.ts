@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
+import { frontOrigin } from 'src/main';
 
 @Injectable()
 export class MailService {
-  constructor(private readonly mailerService: MailerService) {}
+  constructor(private readonly mailerService: MailerService) { }
 
   async sendWelcomeEmail(to: string, name: string) {
     return this.mailerService.sendMail({
@@ -14,7 +15,7 @@ export class MailService {
 
 به "پیدا میشه" خوش آمدی! اینجا، گمشده‌ها دوباره راهشان را پیدا می‌کنند.
 
-اگر چیزی گم کردی، نگران نباش — ما کمکت می‌کنیم پیدایش کنی.  
+اگر چیزی گم کردی، نگران نباش — ما کمکت می‌کنیم پیدایش کنی.
 اگر چیزی پیدا کردی، با اشتراک گذاشتن آن شاید شادی را به دل کسی برگردانی ❤️
 
 تیم "پیدا میشه"
@@ -38,7 +39,8 @@ export class MailService {
   }
 
   async sendForgetPasswordEmail(to: string, token: string) {
-    const url = `http://localhost:3000/reset-password?token=${token}`;
+    console.log(token)
+    const url = new URL(`/auth/reset-password?token=${token}`, frontOrigin).toString();
     return this.mailerService.sendMail({
       to,
       subject: 'بازنشانی رمز عبور 🔑',

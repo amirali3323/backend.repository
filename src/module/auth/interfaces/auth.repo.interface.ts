@@ -12,6 +12,7 @@ export interface IAuthRepository {
     findById(id: number): Promise<User | null>;
     getAll(): Promise<User[]>;
     updatePassword(userId: number, newPassword: string): Promise<void>;
+    updateAvatarUrl(filename: string, id: number): Promise<void>;
 
 
 }

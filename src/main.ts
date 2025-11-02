@@ -3,7 +3,9 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
-import cors from 'cors';
+
+export const frontOrigin = 'http://172.16.112.161:3000';
+
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -26,7 +28,7 @@ async function bootstrap() {
   }))
 
   app.enableCors({
-    origin: 'http://172.16.112.126:3000',
+    origin: frontOrigin,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],

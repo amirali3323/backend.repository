@@ -1,4 +1,4 @@
-import { District } from "./entities/district.entity";
+import { District } from "../entities/district.entity"; 
 import { InjectModel } from "@nestjs/sequelize";
 import { Includeable, WhereOptions } from "sequelize";
 

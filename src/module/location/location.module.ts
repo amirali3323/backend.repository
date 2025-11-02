@@ -5,7 +5,7 @@ import { Province } from './entities/province.entity';
 import { District } from './entities/district.entity';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { RoleGuard } from 'src/common/guards/role.guard';
-import { LocationRepository } from './location.repository';
+import { LocationRepository } from './repositories/location.repository'; 
 import { AuthModule } from '../auth/auth.module';
 
 

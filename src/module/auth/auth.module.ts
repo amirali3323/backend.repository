@@ -6,7 +6,7 @@ import { User } from './entities/user.entity';
 import { AuthRepository } from './repositories/auth.repository';
 import { BcryptService } from 'src/common/services/bcrypt.service';
 import { CustomJwtService } from 'src/common/services/jwt.service';
-import { PendingSignupRepository } from './repositories/pendingSignup.repositort';
+import { PendingSignupRepository } from './repositories/pendingSignup.repository';
 import { MailService } from 'src/common/services/mail.service';
 import { PendingSignup } from './entities/pendingsignup.entity';
 

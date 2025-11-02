@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Res, Query, UseGuards, UseInterceptors, UploadedFile, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Res, Query, UseGuards, UseInterceptors, UploadedFile, Req, Param } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signupUser.dto';
 import { LoginUserDto } from './dto/loginUser.dto';
@@ -12,6 +12,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { createMulterConfig } from 'src/common/config/multer.config';
 import type { Request } from 'express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { resendVerificationEmailDto } from './dto/resendVerificationEmail.dto';
 
 @Controller('api/auth')
 export class AuthController {
@@ -21,7 +22,6 @@ export class AuthController {
   @ApiBody({ type: SignupDto })
   @Post('signup')
   async signUp(@Body() signupDto: SignupDto, @Res({ passthrough: true }) res: Response) {
-    console.log('hi')
     return await this.authService.signUp(signupDto);
   }
 
@@ -38,6 +38,11 @@ export class AuthController {
       maxAge: 24 * 60 * 60 * 1000,
     })
     return { message: 'Login successful', }
+  }
+
+  @Post('resend-verification-email')
+  async resendverificationEmail(@Body() body: resendVerificationEmailDto) {
+    return await this.authService.resendVerificationEmail(body);
   }
 
   @Post('login')
@@ -67,7 +72,7 @@ export class AuthController {
   @Post('reset-password')
   @ApiOperation({ summary: 'Reset user password using token' })
   @ApiResponse({ status: 200, description: 'Password reset successful' })
-  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto, @Query('token') token: string) {
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto, @Param('token') token: string) {
     return await this.authService.resetPassword(resetPasswordDto, token)
   }
 
