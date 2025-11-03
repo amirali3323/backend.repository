@@ -45,4 +45,7 @@ export class CreatePostDto {
     @IsBoolean()
     @IsOptional()
     isWillingToChat: boolean = true;
+
+    @IsOptional()
+    rewardAmount: number;
 }

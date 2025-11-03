@@ -38,4 +38,8 @@ export class LocationService {
     return await this.locationRepository.getAllIds();
   }
 
+  async seedIranCitis(){
+    await this.locationRepository.seedIranCities();
+  }
+
 }

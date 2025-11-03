@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsArray } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PostType } from '../entities/post.entity';
 
@@ -9,25 +9,22 @@ export enum SortOrder {
 }
 
 export class FeedFilterDto {
-  @ApiPropertyOptional({ description: 'Province name', example: 'Fars' })
+  @ApiPropertyOptional({ description: 'District IDs', example: [1, 2, 3] })
   @IsOptional()
-  @IsString()
-  provinceId?: string;
+  @Type(() => Number)
+  districtIds?: number[];
 
-  @ApiPropertyOptional({ description: 'District (city) name', example: 'Shiraz' })
+  @ApiPropertyOptional({ description: 'Subcategory ID', example: 5 })
   @IsOptional()
-  @IsString()
-  districtName?: string;
+  @Type(() => Number)
+  @IsInt()
+  subCategoryId?: number;
 
-  @ApiPropertyOptional({ description: 'Main category name', example: 'electronics' })
+  @ApiPropertyOptional({ description: 'Category ID', example: 2 })
   @IsOptional()
-  @IsString()
-  category?: string;
-
-  @ApiPropertyOptional({ description: 'Subcategory name', example: 'mobile' })
-  @IsOptional()
-  @IsString()
-  subCategory?: string;
+  @Type(() => Number)
+  @IsInt()
+  categoryId?: number;
 
   @ApiPropertyOptional({
     description: 'Sort order of posts',
@@ -46,22 +43,4 @@ export class FeedFilterDto {
   @IsOptional()
   @IsEnum(PostType)
   type?: PostType;
-
-  @ApiPropertyOptional({
-    description: 'Page number for pagination',
-    example: 1,
-  })
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  page?: number;
-
-  @ApiPropertyOptional({
-    description: 'Number of posts per page',
-    example: 10,
-  })
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  limit?: number;
 }

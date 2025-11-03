@@ -4,7 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 
-export const frontOrigin = 'http://172.16.112.239:3000';
+export const frontOrigin = 'http://172.16.112.57:3000';
 
 
 async function bootstrap() {
@@ -25,6 +25,7 @@ async function bootstrap() {
     whitelist: true,
     forbidNonWhitelisted: true,
     transform: true,
+    transformOptions: { enableImplicitConversion: true },
   }))
 
   app.enableCors({

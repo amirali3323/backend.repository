@@ -10,6 +10,10 @@ export class LocationController {
     return await this.locationService.getAllIds();
   }
 
+  @Get('seed')
+  async seedIranLocations() {
+    return await this.locationService.seedIranCitis();
+  }
   // @UseGuards(RoleGuard)
   // @Roles('admin')
   // @Post('createCity')

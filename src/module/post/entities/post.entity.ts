@@ -32,6 +32,8 @@ export class Post extends Model<Post,
         subCategoryId: number,
         hidePhoneNumber: boolean,
         isWillingToChat: boolean,
+        rewardAmount: number,
+        status?: StatusPost;
     }
 > {
     @Column({
@@ -64,6 +66,12 @@ export class Post extends Model<Post,
         allowNull: true,
     })
     declare mainImage: string;
+
+    @Column({
+      type: DataType.STRING,
+      allowNull: true,
+    })
+    declare rewardAmount: number | null;
 
     @HasMany(() => PostImage)
     declare images: PostImage[];
