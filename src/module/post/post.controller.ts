@@ -24,21 +24,26 @@ import { FeedFilterDto } from './dto/feedPostFilter.dto';
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
+  /** Seed database with fake posts (for testing) */
   @Get('seedFakePosts')
   async seedFakePosts() {
     return await this.postService.seedFakePosts();
   }
 
+  /** Seed database with default categories and subcategories */
   @Get('seed-categories')
   async seedCategories() {
     return await this.postService.seedCategoriesAndSubCategories();
   }
 
+  /** Get post feed with optional filters (category, district, type, sort, etc.) */
   @UseGuards(OptionalGuard)
   @Get('get-feed')
   async getFeed(@Query() query: FeedFilterDto) {
     return await this.postService.getFeed(query);
   }
+
+  /** Create a new post with uploaded images (User only) */
   @Post('createPost')
   @UseGuards(RoleGuard)
   @Roles('user')
@@ -57,6 +62,7 @@ export class PostController {
     return await this.postService.createPost(createPostDto, req.user.id);
   }
 
+  /** Get detailed post info by ID (accessible to all, including guests) */
   @UseGuards(OptionalGuard)
   @Get(':id')
   async getPost(@Param('id', ParseIntPipe) postId: number, @Req() req?: any) {

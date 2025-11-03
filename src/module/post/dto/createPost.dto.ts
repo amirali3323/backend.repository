@@ -1,51 +1,63 @@
-import { IsString, IsNotEmpty, IsOptional, IsEnum, IsBoolean, } from "class-validator";
-import { BooleanString, PostType } from "../entities/post.entity";
+import { IsString, IsNotEmpty, IsOptional, IsEnum, IsBoolean } from "class-validator";
+import { PostType } from "../entities/post.entity";
 import { LocationInputDto } from "./locationInput.dto";
 import { Transform } from "class-transformer";
 
-
-
+/**
+ * DTO for creating a new post
+ * Includes validation and type transformation rules
+ */
 export class CreatePostDto {
-    @IsString()
-    @IsNotEmpty({ message: 'Title is required' })
-    declare title: string;
+  /** Post title (required) */
+  @IsString()
+  @IsNotEmpty({ message: 'Title is required' })
+  declare title: string;
 
-    @IsString()
-    @IsOptional()
-    declare description?: string;
+  /** Optional text description */
+  @IsString()
+  @IsOptional()
+  declare description?: string;
 
-    @IsEnum(PostType, { message: 'Type must be valid PostType' })
-    declare type: PostType;
+  /** Post type (e.g., lost / found) */
+  @IsEnum(PostType, { message: 'Type must be valid PostType' })
+  declare type: PostType;
 
-    @IsOptional()
-    @IsString()
-    declare mainImage?: string;
+  /** Main image URL (optional) */
+  @IsOptional()
+  @IsString()
+  declare mainImage?: string;
 
-    @IsOptional()
-    @IsString()
-    declare extraImages: string[];
+  /** Additional images (optional) */
+  @IsOptional()
+  @IsString()
+  declare extraImages: string[];
 
-    @IsNotEmpty()
-    locationInputs: LocationInputDto[];
+  /** List of related location inputs */
+  @IsNotEmpty()
+  locationInputs: LocationInputDto[];
 
-    @IsString({ message: 'SubCategoryName must be a string' })
-    @IsNotEmpty({ message: 'SubCategoryName is required' })
-    declare category: string;
+  /** Subcategory name (required) */
+  @IsString({ message: 'SubCategoryName must be a string' })
+  @IsNotEmpty({ message: 'SubCategoryName is required' })
+  declare category: string;
 
-    @Transform(({ value }) =>
-        value === 'true' || value === true || value === 1 ? true : false,
-    )
-    @IsBoolean()
-    @IsOptional()
-    hidePhoneNumber: boolean = false;
+  /** Whether to hide user’s phone number (default: false) */
+  @Transform(({ value }) =>
+    value === 'true' || value === true || value === 1 ? true : false,
+  )
+  @IsBoolean()
+  @IsOptional()
+  hidePhoneNumber: boolean = false;
 
-    @Transform(({ value }) =>
-        value === 'true' || value === true || value === 1 ? true : false,
-    )
-    @IsBoolean()
-    @IsOptional()
-    isWillingToChat: boolean = true;
+  /** Whether user is willing to chat (default: true) */
+  @Transform(({ value }) =>
+    value === 'true' || value === true || value === 1 ? true : false,
+  )
+  @IsBoolean()
+  @IsOptional()
+  isWillingToChat: boolean = true;
 
-    @IsOptional()
-    rewardAmount: number;
+  /** Optional reward amount for lost/found item */
+  @IsOptional()
+  rewardAmount: number;
 }

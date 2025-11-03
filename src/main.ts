@@ -1,45 +1,26 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
+import { validationConfig } from './common/config/validation.config';
+import { appConfig } from './common/config/app.config';
 
-export const frontOrigin = 'http://172.16.112.57:3000';
-
+export const frontOrigin = 'http://localhost:3000';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  const config = new DocumentBuilder()
-    .setTitle('پیدا میشه API')
-    .setDescription('مستندسازی APIهای پروژه پیدا میشه')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api-docs', app, document);
-
-
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-    transformOptions: { enableImplicitConversion: true },
-  }))
-
+  app.useGlobalPipes(new ValidationPipe(validationConfig));
   app.enableCors({
     origin: frontOrigin,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
-
   app.use(cookieParser());
-  const port = 3001;
-  const host = '0.0.0.0';
-  app.listen(port, host, () => {
-    console.log(`Server running on http://${host}:${port}`);
+
+  app.listen(appConfig.port, appConfig.host, () => {
+    console.log(`🚀 Server running on http://${appConfig.host}:${appConfig.port}`);
   });
 }
 bootstrap();

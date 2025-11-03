@@ -23,7 +23,7 @@ export class PostRepository {
     @InjectModel(PostDistrict)
     private postDistricModel: typeof PostDistrict,
   ) {}
-
+  /** Find a subcategory by its name and parent category name */
   async findSubCategoryByName(categoryName: string, subCategoryName: string) {
     return await this.subCategoryModel.findOne({
       where: { subCategoryName },
@@ -37,7 +37,7 @@ export class PostRepository {
       ],
     });
   }
-
+  /** Create a new post record */
   async create(data: {
     title: string;
     description?: string;
@@ -51,7 +51,7 @@ export class PostRepository {
   }): Promise<Post> {
     return await this.postModel.create(data);
   }
-
+  /** Retrieve a single post with its related data (category, districts, images) */
   async getPost(id: number) {
     return await this.postModel.findOne({
       where: { id },
@@ -88,7 +88,7 @@ export class PostRepository {
       ],
     });
   }
-
+  /** Find all posts with flexible filtering, sorting, and pagination options */
   async findAll(options: {
     where?: WhereOptions<Post>;
     attributes?: (keyof Post)[];
@@ -100,7 +100,7 @@ export class PostRepository {
   }): Promise<Post[]> {
     return await this.postModel.findAll(options);
   }
-
+  /** Seed default categories and subcategories for initialization */
   async seedCategoriesAndSubCategories() {
     const categories = [
       {
@@ -148,11 +148,11 @@ export class PostRepository {
       }
     }
   }
-
+  /** Helper method: pick a random item from an array */
   private random<T>(arr: T[]): T {
     return arr[Math.floor(Math.random() * arr.length)];
   }
-
+  /** Seed database with fake posts for testing/demo purposes */
   async seedFakePosts() {
     const subCategories = await this.subCategoryModel.findAll();
     const districts = await this.districtModel.findAll();

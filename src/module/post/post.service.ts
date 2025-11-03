@@ -3,7 +3,7 @@ import { PostRepository } from './repositories/post.repository';
 import { CreatePostDto } from './dto/createPost.dto';
 import { AuthService } from '../auth/auth.service';
 import { AppException } from 'src/common/exceptions/AppException';
-import { BooleanString, StatusPost } from './entities/post.entity';
+import { StatusPost } from './entities/post.entity';
 import { LocationService } from '../location/location.service';
 import { PostImageRepository } from './repositories/postImages.repository';
 import { PostDistricRepository } from './repositories/postDistrict.repository';
@@ -23,10 +23,12 @@ export class PostService {
     private readonly locationService: LocationService,
   ) {}
 
+  /** Seed database with default categories and subcategories */
   async seedCategoriesAndSubCategories() {
     await this.postRepository.seedCategoriesAndSubCategories();
   }
 
+  /** Create a new post with images, category, and location mapping */
   async createPost(createPostDto: CreatePostDto, userId: number) {
     const {
       title,
@@ -64,22 +66,22 @@ export class PostService {
       rewardAmount,
     });
 
+    // Save extra post images
     for (const imageUrl of extraImages) {
       await this.postImageRepository.create(imageUrl, newPost.id);
     }
-
+    // Link post with districts
     for (const districtId of districtIds) {
       await this.postDistricRepository.create(newPost.id, districtId);
     }
     return { message: 'Created post successfully' };
   }
-
+  /** Get detailed post data (visible to owner or if approved) */
   async getPost(id: number, userId?: number) {
     const post = await this.postRepository.getPost(id);
     if (!post) throw new AppException('Post not found', HttpStatus.NOT_FOUND);
 
     if (post.status === StatusPost.PENDING || post.status === StatusPost.REJECTED) {
-      console.log('here');
       if (userId !== post.userId) {
         throw new AppException('Post not found', HttpStatus.NOT_FOUND);
       }
@@ -110,9 +112,9 @@ export class PostService {
         })) || [],
     };
   }
-
+  /** Fetch public post feed with filters and pagination */
   async getFeed(query: FeedFilterDto) {
-    const { districtIds, subCategoryId, categoryId, type, sort } = query;
+    const { districtIds, subCategoryId, categoryId, type, sort, offset } = query;
     return await this.postRepository.findAll({
       where: { status: StatusPost.APPROVED, ...(type && { type }) },
       include: [
@@ -142,11 +144,13 @@ export class PostService {
             ]
           : []),
       ],
-      attributes: ['id', 'title', 'type', 'mainImage', 'createdAt'],
+      attributes: ['id', 'title', 'type', 'mainImage', 'createdAt', 'rewardAmount'],
       order: [['createdAt', sort === SortOrder.OLDEST ? 'ASC' : 'DESC']],
+      limit: 40,
+      offset,
     });
   }
-
+  /** Seed fake posts for testing */
   async seedFakePosts() {
     return await this.postRepository.seedFakePosts();
   }

@@ -1,17 +1,18 @@
-import { Table, Column, Model, DataType, HasMany } from "sequelize-typescript";
-import { SubCategory } from "./subCategory.entity";
+import { Table, Column, Model, DataType, HasMany } from 'sequelize-typescript';
+import { SubCategory } from './subCategory.entity';
 
-@Table({tableName: 'category'})
+/** Category entity - represents a main post category (e.g., Electronics, Pets) */
+@Table({ tableName: 'category' })
 export class Category extends Model<Category> {
-    @Column({
-        type: DataType.STRING,
-        allowNull: false,
-        unique: true,
-    })
-    declare categoryName: string;
+  /** Unique category name */
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    unique: true,
+  })
+  declare categoryName: string;
 
-    @HasMany(()=> SubCategory)
-    subCategorys: SubCategory[];
-
-
+  /** Related subcategories under this category */
+  @HasMany(() => SubCategory)
+  subCategorys: SubCategory[];
 }
