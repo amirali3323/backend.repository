@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { CreateCityDto } from './dto/createCity.dto';
-import { LocationRepository } from './repositories/location.repository'; 
+import { LocationRepository } from './repositories/location.repository';
 import { AppException } from 'src/common/exceptions/AppException';
 import { CreateDistrictDto } from './dto/createDistrict.dto';
 import { Op } from 'sequelize';
@@ -32,6 +32,10 @@ export class LocationService {
     });
 
     return districts.map(d => d.id);
+  }
+
+  async getAllIds() {
+    return await this.locationRepository.getAllIds();
   }
 
 }

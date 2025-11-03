@@ -25,7 +25,6 @@ export class AuthController {
     return await this.authService.signUp(signupDto);
   }
 
-
   @Post('verify-email')
   @ApiOperation({ summary: 'Verify user email with code' })
   @ApiResponse({ status: 200, description: 'Email verified and user logged in' })
@@ -72,8 +71,8 @@ export class AuthController {
   @Post('reset-password')
   @ApiOperation({ summary: 'Reset user password using token' })
   @ApiResponse({ status: 200, description: 'Password reset successful' })
-  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto, @Param('token') token: string) {
-    return await this.authService.resetPassword(resetPasswordDto, token)
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return await this.authService.resetPassword(resetPasswordDto)
   }
 
   @UseGuards(RoleGuard)

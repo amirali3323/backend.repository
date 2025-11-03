@@ -6,7 +6,6 @@ import { CreatePostDto } from './dto/createPost.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { createMulterConfig } from 'src/common/config/multer.config';
 import { OptionalGuard } from 'src/common/guards/optional.guard';
-import { BooleanString } from './entities/post.entity';
 
 @Controller('api/post')
 export class PostController {
@@ -37,4 +36,7 @@ export class PostController {
     return await this.postService.getPost(postId, req.user?.id);
   }
 
+  @Get('getFeed')
+  async getFeed() {
+  }
 }

@@ -75,9 +75,7 @@ export class AuthService {
 
   async resendVerificationEmail(body: resendVerificationEmailDto) {
     const { email } = body;
-    console.log(email)
     const pendingUser = await this.pendingSignupRepository.findLatestByEmail(email);
-    console.log(pendingUser)
     if (!pendingUser) throw new AppException('User not found', HttpStatus.NOT_FOUND);
 
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -109,8 +107,8 @@ export class AuthService {
     return { message: 'Password reset link sent to your email.' };
   }
 
-  async resetPassword(resetPasswordDto: ResetPasswordDto, token: string) {
-    const { newPassword } = resetPasswordDto;
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    const { newPassword, token } = resetPasswordDto;
 
     if (!token) throw new AppException('Reset token is missing', HttpStatus.BAD_REQUEST)
     const decoded = await this.jwtService.verify(token);

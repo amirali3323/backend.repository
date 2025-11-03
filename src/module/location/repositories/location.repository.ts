@@ -1,11 +1,14 @@
-import { District } from "../entities/district.entity"; 
+import { District } from "../entities/district.entity";
 import { InjectModel } from "@nestjs/sequelize";
 import { Includeable, WhereOptions } from "sequelize";
+import { Province } from "../entities/province.entity";
 
 export class LocationRepository {
     constructor(
         @InjectModel(District)
         private districtModel :typeof District,
+        @InjectModel(Province)
+        private provinceModel: typeof Province,
     ) { }
 
     async findALlDistricts(options: {
@@ -18,5 +21,17 @@ export class LocationRepository {
         raw?: boolean,
     }): Promise<District[]> {
         return await this.districtModel.findAll(options);
+    }
+
+    async getAllIds() {
+      return await this.provinceModel.findAll({
+        attributes: ['id', 'provinceName'],
+        include: [{
+          model: District,
+          attributes: ['id', 'districtName'],
+          order: [['id', 'ASC']]
+        }],
+        order: [['id', 'AsC']],
+      })
     }
 }

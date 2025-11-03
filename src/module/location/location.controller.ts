@@ -5,6 +5,11 @@ import { LocationService } from './location.service';
 export class LocationController {
   constructor(private readonly locationService: LocationService) {}
 
+  @Get('get-all-ids')
+  async getAllIds() {
+    return await this.locationService.getAllIds();
+  }
+
   // @UseGuards(RoleGuard)
   // @Roles('admin')
   // @Post('createCity')
@@ -19,5 +24,5 @@ export class LocationController {
   //   return this.locationService.createDistrict(createDistrictDto);
   // }
 
-  
+
 }
