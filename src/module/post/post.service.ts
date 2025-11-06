@@ -12,6 +12,8 @@ import { SubCategory } from './entities/subCategory.entity';
 import { Category } from './entities/category.entity';
 import { District } from '../location/entities/district.entity';
 import { Op } from 'sequelize';
+import { CreatepwnerClaimDto } from './dto/createOwnerClaim.dto';
+import { OwnerClaimRepositoy } from './repositories/ownerClaim.repository';
 
 @Injectable()
 export class PostService {
@@ -19,6 +21,7 @@ export class PostService {
     private readonly postRepository: PostRepository,
     private readonly postImageRepository: PostImageRepository,
     private readonly postDistricRepository: PostDistricRepository,
+    private readonly ownerClaimRepository: OwnerClaimRepositoy,
     private readonly authService: AuthService,
     private readonly locationService: LocationService,
   ) {}
@@ -104,7 +107,6 @@ export class PostService {
       category: plain.subCategory.category.categoryName,
       subCategory: plain.subCategory.subCategoryName,
       phoneNumber,
-      isWillingToChat: plain.isWillingToChat,
       districts:
         plain.districts?.map((d) => ({
           districtName: d.districtName,
@@ -153,5 +155,24 @@ export class PostService {
   /** Seed fake posts for testing */
   async seedFakePosts() {
     return await this.postRepository.seedFakePosts();
+  }
+
+  async createOwnerClaim(body: CreatepwnerClaimDto, claimantId: number, postId: number) {
+    const { claimImage, message, } = body;
+    const exsistUser = await this.authService.findByPk(claimantId);
+    if (!exsistUser) throw new AppException('User not found', HttpStatus.NOT_FOUND);
+
+    const exsistPost = await this.postRepository.getPost(postId);
+    if (!exsistPost || exsistPost.status !== StatusPost.APPROVED) throw new AppException('Post not found', HttpStatus.NOT_FOUND);
+
+    const hasClaimed = await this.ownerClaimRepository.hasClaimed(postId, claimantId);
+    if (hasClaimed)
+      throw new AppException('You have already submitted an ownership claim for this post', HttpStatus.CONFLICT);
+
+    await this.ownerClaimRepository.create({ claimantId, postId, message, claimImage });
+    return {
+      message: 'Ownership claim submitted successfully',
+      statusCode: HttpStatus.CREATED,
+    };
   }
 }

@@ -1,4 +1,5 @@
-import { Table, Column, Model, DataType, HasMany, BelongsTo } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, HasMany, BelongsTo, BelongsToMany } from 'sequelize-typescript';
+import { OwnerClaim } from 'src/module/post/entities/ownerClaim.entity';
 import { Post } from 'src/module/post/entities/post.entity';
 
 export enum UserRole {
@@ -63,4 +64,7 @@ export class User extends Model<
   // User's posts (one-to-many relation)
   @HasMany(() => Post)
   posts: Post[];
+
+  @BelongsToMany(()=> Post, ()=> OwnerClaim)
+  declare ownerClaims: OwnerClaim[];
 }

@@ -10,15 +10,17 @@ import {
   UploadedFiles,
   ParseIntPipe,
   Query,
+  UploadedFile,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { RoleGuard } from 'src/common/guards/role.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { CreatePostDto } from './dto/createPost.dto';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { createMulterConfig } from 'src/common/config/multer.config';
 import { OptionalGuard } from 'src/common/guards/optional.guard';
 import { FeedFilterDto } from './dto/feedPostFilter.dto';
+import { CreatepwnerClaimDto } from './dto/createOwnerClaim.dto';
 
 @Controller('api/post')
 export class PostController {
@@ -67,5 +69,19 @@ export class PostController {
   @Get(':id')
   async getPost(@Param('id', ParseIntPipe) postId: number, @Req() req?: any) {
     return await this.postService.getPost(postId, req.user?.id);
+  }
+
+  @Post(':postId/owner-claims')
+  @UseGuards(RoleGuard)
+  @Roles('user')
+  @UseInterceptors(FileInterceptor('claimImage', createMulterConfig('./uploads/claimImages')))
+  async createClaim(
+    @Body() body: CreatepwnerClaimDto,
+    @UploadedFile() claimImage: Express.Multer.File,
+    @Param('postId') postId: number,
+    @Req() req: any,
+  ) {
+    body.claimImage = claimImage.filename;
+    return await this.postService.createOwnerClaim(body, req.user.id, postId);
   }
 }

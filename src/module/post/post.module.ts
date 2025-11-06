@@ -12,13 +12,15 @@ import { LocationModule } from '../location/location.module';
 import { PostDistricRepository } from './repositories/postDistrict.repository';
 import { PostImageRepository } from './repositories/postImages.repository';
 import { PostDistrict } from './entities/postDistrict.entity';
+import { OwnerClaimRepositoy } from './repositories/ownerClaim.repository';
+import { OwnerClaim } from './entities/ownerClaim.entity';
 
 @Module({
-  imports: [SequelizeModule.forFeature([Post, PostImage, Category, SubCategory, PostDistrict]),
+  imports: [SequelizeModule.forFeature([Post, PostImage, Category, SubCategory, PostDistrict, OwnerClaim]),
     AuthModule,
     LocationModule
   ],
   controllers: [PostController],
-  providers: [PostService, PostRepository, PostDistricRepository, PostImageRepository],
+  providers: [PostService, OwnerClaimRepositoy, PostRepository, PostDistricRepository, PostImageRepository, ],
 })
 export class PostModule { }

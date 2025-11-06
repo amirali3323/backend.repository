@@ -4,7 +4,7 @@ import { District } from 'src/module/location/entities/district.entity';
 import { PostDistrict } from './postDistrict.entity';
 import { PostImage } from './postImage.entity';
 import { SubCategory } from './subCategory.entity';
-
+import { OwnerClaim } from './ownerClaim.entity';
 export enum PostType {
   LOST = 'lost',
   FOUND = 'found',
@@ -84,14 +84,6 @@ export class Post extends Model<
   @HasMany(() => PostImage)
   declare images: PostImage[];
 
-  /** Indicates if the user allows chat communication */
-  @Column({
-    type: DataType.BOOLEAN,
-    allowNull: false,
-    defaultValue: true,
-  })
-  declare isWillingToChat: boolean;
-
   /** Indicates if the user's phone number should be hidden */
   @Column({
     type: DataType.BOOLEAN,
@@ -121,4 +113,7 @@ export class Post extends Model<
   @ForeignKey(() => SubCategory)
   @Column
   declare subCategoryId: number;
+
+  @BelongsToMany(()=> User, ()=> OwnerClaim)
+  declare claiments: User[];
 }

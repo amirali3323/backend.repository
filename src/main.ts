@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 import { validationConfig } from './common/config/validation.config';
 import { appConfig } from './common/config/app.config';
 
-export const frontOrigin = 'http://localhost:3000';
+export const frontOrigin = 'http://172.16.112.62:3000';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
