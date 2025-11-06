@@ -5,22 +5,9 @@ import { PostDistrict } from './postDistrict.entity';
 import { PostImage } from './postImage.entity';
 import { SubCategory } from './subCategory.entity';
 import { OwnerClaim } from './ownerClaim.entity';
-export enum PostType {
-  LOST = 'lost',
-  FOUND = 'found',
-}
+import { PostStatus } from 'src/common/enums/post-status.enum';
+import { PostType } from 'src/common/enums/post-type.enum';
 
-export enum StatusPost {
-  PENDING = 'PENDING',
-  APPROVED = 'APPROVED',
-  REJECTED = 'REJECTED',
-  RESOLVED = 'RESOLVED',
-}
-
-export enum BooleanString {
-  TRUE = 'true',
-  FALSE = 'false',
-}
 @Table({ tableName: 'Posts' })
 export class Post extends Model<
   Post,
@@ -34,7 +21,7 @@ export class Post extends Model<
     hidePhoneNumber: boolean;
     isWillingToChat: boolean;
     rewardAmount: number;
-    status?: StatusPost;
+    status?: PostStatus;
   }
 > {
   /** Title of the post */
@@ -60,11 +47,11 @@ export class Post extends Model<
 
   /** Current status of the post (Pending, Approved, etc.) */
   @Column({
-    type: DataType.ENUM(...Object.values(StatusPost)),
+    type: DataType.ENUM(...Object.values(PostStatus)),
     allowNull: false,
-    defaultValue: StatusPost.PENDING,
+    defaultValue: PostStatus.PENDING,
   })
-  declare status: StatusPost;
+  declare status: PostStatus;
 
   /** Main image of the post */
   @Column({
@@ -117,3 +104,5 @@ export class Post extends Model<
   @BelongsToMany(()=> User, ()=> OwnerClaim)
   declare claiments: User[];
 }
+export { PostType };
+

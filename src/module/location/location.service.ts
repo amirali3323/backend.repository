@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { CreateCityDto } from './dto/createCity.dto';
 import { LocationRepository } from './repositories/location.repository';
-import { AppException } from 'src/common/exceptions/AppException';
+import { AppException } from 'src/common/exceptions/app.exception';
 import { CreateDistrictDto } from './dto/createDistrict.dto';
 import { Op } from 'sequelize';
 import { District } from './entities/district.entity';

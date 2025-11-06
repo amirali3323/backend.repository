@@ -1,4 +1,5 @@
-import { Post, PostType, StatusPost } from '../entities/post.entity';
+import { Post, } from '../entities/post.entity';
+import { PostStatus, PostType } from 'src/common/enums';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { District } from '../../location/entities/district.entity';
@@ -191,11 +192,11 @@ export class PostRepository {
       const randomUser = Math.floor(Math.random() * 3) + 1;
       const randomType = this.random([PostType.LOST, PostType.FOUND]);
       const randomStatus = this.random([
-        StatusPost.APPROVED,
-        StatusPost.APPROVED,
-        StatusPost.APPROVED,
-        StatusPost.PENDING,
-        StatusPost.RESOLVED,
+        PostStatus.APPROVED,
+        PostStatus.APPROVED,
+        PostStatus.APPROVED,
+        PostStatus.PENDING,
+        PostStatus.RESOLVED,
       ]);
       const randomReward = Math.random() > 0.6 ? Math.floor(Math.random() * 300) + 50 : null;
 

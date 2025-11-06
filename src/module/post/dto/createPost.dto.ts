@@ -1,7 +1,7 @@
-import { IsString, IsNotEmpty, IsOptional, IsEnum, IsBoolean } from "class-validator";
-import { PostType } from "../entities/post.entity";
-import { LocationInputDto } from "./locationInput.dto";
-import { Transform } from "class-transformer";
+import { IsString, IsNotEmpty, IsOptional, IsEnum, IsBoolean } from 'class-validator';
+import { PostType } from '../entities/post.entity';
+import { LocationInputDto } from './locationInput.dto';
+import { Transform } from 'class-transformer';
 
 /**
  * DTO for creating a new post
@@ -42,17 +42,13 @@ export class CreatePostDto {
   declare category: string;
 
   /** Whether to hide user’s phone number (default: false) */
-  @Transform(({ value }) =>
-    value === 'true' || value === true || value === 1 ? true : false,
-  )
+  @Transform(({ value }) => (value === 'true' || value === true || value === 1 ? true : false))
   @IsBoolean()
   @IsOptional()
   hidePhoneNumber: boolean = false;
 
   /** Whether user is willing to chat (default: true) */
-  @Transform(({ value }) =>
-    value === 'true' || value === true || value === 1 ? true : false,
-  )
+  @Transform(({ value }) => (value === 'true' || value === true || value === 1 ? true : false))
   @IsBoolean()
   @IsOptional()
   isWillingToChat: boolean = true;

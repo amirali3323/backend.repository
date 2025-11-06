@@ -1,12 +1,8 @@
 import { Table, Model, Column, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import { Post } from '../../post/entities/post.entity';
 import { User } from 'src/module/auth/entities/user.entity';
+import { OwnerClaimStatus } from 'src/common/enums/ownerClaim-status.enum';
 
-export enum OwnerClaimStatus {
-  PENDING = 'PENDING',
-  APPROVED = 'APPROVED',
-  REJECTED = 'REJECTED',
-}
 
 @Table({ tableName: 'ownerClaim' })
 export class OwnerClaim extends Model<

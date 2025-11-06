@@ -1,9 +1,10 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { ConflictException, HttpStatus, Injectable } from '@nestjs/common';
 import { PostRepository } from './repositories/post.repository';
 import { CreatePostDto } from './dto/createPost.dto';
 import { AuthService } from '../auth/auth.service';
-import { AppException } from 'src/common/exceptions/AppException';
-import { StatusPost } from './entities/post.entity';
+import { NotFoundException,  } from 'src/common/exceptions';
+import { ErrorCode } from 'src/common/enums/error-code.enum';
+import { PostStatus } from 'src/common/enums';
 import { LocationService } from '../location/location.service';
 import { PostImageRepository } from './repositories/postImages.repository';
 import { PostDistricRepository } from './repositories/postDistrict.repository';
@@ -47,15 +48,15 @@ export class PostService {
     } = createPostDto;
 
     const exsistUser = await this.authService.findByPk(userId);
-    if (!exsistUser) throw new AppException('User not found', HttpStatus.NOT_FOUND);
+    if (!exsistUser) throw new NotFoundException('User not found', ErrorCode.USER_NOT_FOUND);
 
     const [categoryName, subCategoryName] = category.split('-');
 
     const subCategory = await this.postRepository.findSubCategoryByName(categoryName, subCategoryName);
-    if (!subCategory) throw new AppException('SubCategory not found', HttpStatus.NOT_FOUND);
+    if (!subCategory) throw new NotFoundException('SubCategory not found', ErrorCode.SUBCATEGORY_NOT_FOUND);
 
     const districtIds = await this.locationService.getAllDistrictIdsWithNames(locationInputs);
-    if (!districtIds.length) throw new AppException('location not found', HttpStatus.NOT_FOUND);
+    if (!districtIds.length) throw new NotFoundException('location not found', ErrorCode.LOCATION_NOT_FOUND);
 
     const newPost = await this.postRepository.create({
       title,
@@ -82,11 +83,11 @@ export class PostService {
   /** Get detailed post data (visible to owner or if approved) */
   async getPost(id: number, userId?: number) {
     const post = await this.postRepository.getPost(id);
-    if (!post) throw new AppException('Post not found', HttpStatus.NOT_FOUND);
+    if (!post) throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
 
-    if (post.status === StatusPost.PENDING || post.status === StatusPost.REJECTED) {
+    if (post.status === PostStatus.PENDING || post.status === PostStatus.REJECTED) {
       if (userId !== post.userId) {
-        throw new AppException('Post not found', HttpStatus.NOT_FOUND);
+        throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
       }
     }
     let phoneNumber: string | null = null;
@@ -118,7 +119,7 @@ export class PostService {
   async getFeed(query: FeedFilterDto) {
     const { districtIds, subCategoryId, categoryId, type, sort, offset } = query;
     return await this.postRepository.findAll({
-      where: { status: StatusPost.APPROVED, ...(type && { type }) },
+      where: { status: PostStatus.APPROVED, ...(type && { type }) },
       include: [
         {
           model: SubCategory,
@@ -160,14 +161,14 @@ export class PostService {
   async createOwnerClaim(body: CreatepwnerClaimDto, claimantId: number, postId: number) {
     const { claimImage, message, } = body;
     const exsistUser = await this.authService.findByPk(claimantId);
-    if (!exsistUser) throw new AppException('User not found', HttpStatus.NOT_FOUND);
+    if (!exsistUser) throw new NotFoundException('User not found', ErrorCode.USER_NOT_FOUND);
 
     const exsistPost = await this.postRepository.getPost(postId);
-    if (!exsistPost || exsistPost.status !== StatusPost.APPROVED) throw new AppException('Post not found', HttpStatus.NOT_FOUND);
+    if (!exsistPost || exsistPost.status !== PostStatus.APPROVED) throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
 
     const hasClaimed = await this.ownerClaimRepository.hasClaimed(postId, claimantId);
     if (hasClaimed)
-      throw new AppException('You have already submitted an ownership claim for this post', HttpStatus.CONFLICT);
+      throw new ConflictException('You have already submitted an ownership claim for this post', ErrorCode.OWNER_CLAIM_ALREADY_EXISTS);
 
     await this.ownerClaimRepository.create({ claimantId, postId, message, claimImage });
     return {
