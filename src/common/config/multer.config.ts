@@ -20,10 +20,7 @@ export function createMulterConfig(uploadPath: string) {
     fileFilter: (req, file, callback) => {
       const allowedMimeTypes = ['image/png', 'image/jpeg', 'image/jpg'];
       if (!allowedMimeTypes.includes(file.mimetype)) {
-        return callback(
-          new BadRequestException('Only PNG, JPG and JPEG formats are allowed'),
-          false
-        );
+        return callback(new BadRequestException('Only PNG, JPG and JPEG formats are allowed'), false);
       }
       callback(null, true);
     },

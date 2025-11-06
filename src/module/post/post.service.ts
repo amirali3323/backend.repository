@@ -47,9 +47,6 @@ export class PostService {
       rewardAmount,
     } = createPostDto;
 
-    const exsistUser = await this.authService.findByPk(userId);
-    if (!exsistUser) throw new NotFoundException('User not found', ErrorCode.USER_NOT_FOUND);
-
     const [categoryName, subCategoryName] = category.split('-');
 
     const subCategory = await this.postRepository.findSubCategoryByName(categoryName, subCategoryName);
@@ -160,8 +157,6 @@ export class PostService {
 
   async createOwnerClaim(body: CreatepwnerClaimDto, claimantId: number, postId: number) {
     const { claimImage, message, } = body;
-    const exsistUser = await this.authService.findByPk(claimantId);
-    if (!exsistUser) throw new NotFoundException('User not found', ErrorCode.USER_NOT_FOUND);
 
     const exsistPost = await this.postRepository.getPost(postId);
     if (!exsistPost || exsistPost.status !== PostStatus.APPROVED) throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
