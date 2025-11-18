@@ -20,7 +20,7 @@ import { CreatePostDto } from './dto/createPost.dto';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { createMulterConfig } from 'src/common/config/multer.config';
 import { OptionalGuard } from 'src/common/guards/optional.guard';
-import { FeedFilterDto } from './dto/feedPostFilter.dto';
+import { ListFilterDto } from './dto/feedPostFilter.dto';
 import { CreatepwnerClaimDto } from './dto/createOwnerClaim.dto';
 import { JwtStrategy } from 'src/common/strategies/jwt.strategy';
 import type { Response } from 'express';
@@ -43,9 +43,9 @@ export class PostController {
 
   /** Get post feed with optional filters (category, district, type, sort, etc.) */
   @UseGuards(OptionalGuard)
-  @Get('get-feed')
-  async getFeed(@Query() query: FeedFilterDto) {
-    return await this.postService.getFeed(query);
+  @Get('list')
+  async getList(@Query() query: ListFilterDto) {
+    return await this.postService.getList(query);
   }
 
   /** Create a new post with uploaded images (User only) */
@@ -92,5 +92,12 @@ export class PostController {
   async getImage(@Param('filename') filename: string, @Res() res: Response) {
     const filePath = await this.postService.getPostImagePath(filename);
     return res.sendFile(filePath);
+  }
+
+  @Get('phoneNumber/:postId')
+  @UseGuards(RoleGuard)
+  @Roles('user')
+  async getPhoneNumber(@Param('postId') postId: number) {
+    return await this.postService.getPhoneNumber(postId);
   }
 }

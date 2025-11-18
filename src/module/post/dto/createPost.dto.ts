@@ -54,5 +54,5 @@ export class CreatePostDto {
 
   /** Optional reward amount for lost/found item */
   @IsOptional()
-  rewardAmount: number;
+  rewardAmount: string;
 }

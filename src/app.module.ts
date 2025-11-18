@@ -5,7 +5,7 @@ import { AuthModule } from './module/auth/auth.module';
 import { PostModule } from './module/post/post.module';
 import { LocationModule } from './module/location/location.module';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { ConfigModule, ConfigService } from '@nestjs/config'
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 import { JwtStrategy } from './common/strategies/jwt.strategy';
@@ -25,11 +25,15 @@ import { JwtStrategy } from './common/strategies/jwt.strategy';
         username: config.get('DB_USER'),
         password: config.get('DB_PASS'),
         database: config.get('DB_DATABASE'),
+        define: {
+          charset: 'utf8mb4',
+          collate: 'utf8mb4_unicode_ci',
+        },
         autoLoadModels: true,
         synchronize: true,
         logging: false,
       }),
-      inject: [ConfigService]
+      inject: [ConfigService],
     }),
     MailerModule.forRootAsync({
       imports: [ConfigModule],
@@ -58,8 +62,6 @@ import { JwtStrategy } from './common/strategies/jwt.strategy';
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(LoggerMiddleware)
-      .forRoutes('*');
+    consumer.apply(LoggerMiddleware).forRoutes('*');
   }
 }

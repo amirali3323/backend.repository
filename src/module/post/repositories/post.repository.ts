@@ -38,6 +38,7 @@ export class PostRepository {
       ],
     });
   }
+
   /** Create a new post record */
   async create(data: {
     title: string;
@@ -48,10 +49,11 @@ export class PostRepository {
     subCategoryId: number;
     hidePhoneNumber: boolean;
     isWillingToChat: boolean;
-    rewardAmount: number;
+    rewardAmount: string;
   }): Promise<Post> {
     return await this.postModel.create(data);
   }
+
   /** Retrieve a single post with its related data (category, districts, images) */
   async getPost(id: number) {
     return await this.postModel.findOne({
@@ -89,6 +91,7 @@ export class PostRepository {
       ],
     });
   }
+
   /** Find all posts with flexible filtering, sorting, and pagination options */
   async findAll(options: {
     where?: WhereOptions<Post>;
@@ -101,6 +104,7 @@ export class PostRepository {
   }): Promise<Post[]> {
     return await this.postModel.findAll(options);
   }
+
   /** Seed default categories and subcategories for initialization */
   async seedCategoriesAndSubCategories() {
     const categories = [
@@ -149,10 +153,12 @@ export class PostRepository {
       }
     }
   }
+
   /** Helper method: pick a random item from an array */
   private random<T>(arr: T[]): T {
     return arr[Math.floor(Math.random() * arr.length)];
   }
+
   /** Seed database with fake posts for testing/demo purposes */
   async seedFakePosts() {
     const subCategories = await this.subCategoryModel.findAll();
@@ -208,7 +214,6 @@ export class PostRepository {
         subCategoryId: randomSub.id,
         hidePhoneNumber: Math.random() > 0.7,
         isWillingToChat: Math.random() > 0.3,
-        rewardAmount: 111,
         status: randomStatus,
       });
 
@@ -222,8 +227,6 @@ export class PostRepository {
           districtId: d.id,
         });
       }
-
-      // createdPosts.push(post);
     }
 
     return {

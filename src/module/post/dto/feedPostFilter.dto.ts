@@ -1,13 +1,10 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsNotEmpty, IsNumber, IsArray } from 'class-validator';
+import { IsEnum, IsOptional, IsNotEmpty, IsNumber, IsArray, IsString } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { SortOrder, PostType } from '../../../common/enums/index';
 
-/**
- * DTO for filtering and sorting post feed
- * Used in GET /post/get-feed endpoint
- */
-export class FeedFilterDto {
+/**DTO for filtering and sorting post feed*/
+export class ListFilterDto {
   /** List of district IDs to filter by (optional) */
   @IsOptional()
   @IsArray()
@@ -44,4 +41,8 @@ export class FeedFilterDto {
   @IsNotEmpty()
   @IsNumber()
   offset: number;
+
+  @IsOptional()
+  @IsString()
+  keyword: string;
 }

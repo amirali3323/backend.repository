@@ -4,17 +4,16 @@ import { CreatePostDto } from './dto/createPost.dto';
 import { AuthService } from '../auth/auth.service';
 import { NotFoundException } from 'src/common/exceptions';
 import { ErrorCode } from 'src/common/enums/error-code.enum';
-import { PostStatus, SortOrder } from 'src/common/enums';
+import { PostStatus } from 'src/common/enums';
 import { LocationService } from '../location/location.service';
 import { PostImageRepository } from './repositories/postImages.repository';
 import { PostDistricRepository } from './repositories/postDistrict.repository';
-import { FeedFilterDto } from './dto/feedPostFilter.dto';
-import { District } from '../location/entities/district.entity';
-import { Op } from 'sequelize';
+import { ListFilterDto } from './dto/feedPostFilter.dto';
 import { CreatepwnerClaimDto } from './dto/createOwnerClaim.dto';
 import { OwnerClaimRepositoy } from './repositories/ownerClaim.repository';
 import path from 'path';
 import * as fs from 'fs';
+import { PostQueryBuilder } from './query/post.query-builder';
 @Injectable()
 export class PostService {
   constructor(
@@ -80,6 +79,7 @@ export class PostService {
       }
     }
 
+
     const plain = post.get({ plain: true });
     return {
       id: plain.id,
@@ -98,39 +98,14 @@ export class PostService {
           districtName: d.districtName,
           provinceName: d.province?.provinceName,
         })) || [],
+      rewardAmount: plain.rewardAmount,
     };
   }
 
   /** Fetch public post feed with filters and pagination */
-  async getFeed(query: FeedFilterDto) {
-    const { districtIds, subCategoryIds, type, sort, offset } = query;
-
-    return await this.postRepository.findAll({
-      where: {
-        status: PostStatus.APPROVED,
-        ...(type && { type }),
-        ...(subCategoryIds && { subCategoryId: { [Op.in]: subCategoryIds } }),
-      },
-      include: [
-        ...(districtIds?.length || districtIds
-          ? [
-              {
-                model: District,
-                as: 'districts',
-                attributes: ['districtName'],
-                through: { attributes: [] },
-                where: { id: { [Op.in]: districtIds } },
-                required: true,
-              },
-            ]
-          : []),
-      ],
-
-      attributes: ['id', 'title', 'type', 'mainImage', 'createdAt', 'rewardAmount'],
-      order: [['createdAt', sort === SortOrder.OLDEST ? 'ASC' : 'DESC']],
-      limit: 40,
-      offset,
-    });
+  async getList(filters: ListFilterDto) {
+    const query = PostQueryBuilder.buildFeedQuery(filters);
+    return await this.postRepository.findAll(query);
   }
 
   /** Seed fake posts for testing */
@@ -138,6 +113,7 @@ export class PostService {
     return await this.postRepository.seedFakePosts();
   }
 
+  /** Create ownership claim for an approved post */
   async createOwnerClaim(body: CreatepwnerClaimDto, claimantId: number, postId: number) {
     const { claimImage, message } = body;
 
@@ -159,6 +135,7 @@ export class PostService {
     };
   }
 
+  /** Get image file path or throw if not found */
   async getPostImagePath(filename: string): Promise<string> {
     const filePath = path.join(process.cwd(), 'uploads', 'postimages', filename);
 
@@ -166,5 +143,15 @@ export class PostService {
       throw new NotFoundException('File not found', ErrorCode.IMAGE_NOT_FOUND);
     }
     return filePath;
+  }
+
+  /** Get owner phone number (only if post is approved) */
+  async getPhoneNumber(postId) {
+    const post = await this.postRepository.getPost(postId);
+    if (!post || post.status !== PostStatus.APPROVED)
+      throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
+
+    const phoneNumber = await this.authService.getPhoneNumber(post.userId);
+    return { phoneNumber };
   }
 }

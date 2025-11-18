@@ -20,7 +20,7 @@ export class Post extends Model<
     subCategoryId: number;
     hidePhoneNumber: boolean;
     isWillingToChat: boolean;
-    rewardAmount: number;
+    rewardAmount?: string;
     status?: PostStatus;
   }
 > {
