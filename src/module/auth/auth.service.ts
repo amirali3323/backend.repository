@@ -163,4 +163,8 @@ export class AuthService {
     if (!user) throw new NotFoundException('User not found', ErrorCode.USER_NOT_FOUND);
     return user.phoneNumber;
   }
+
+  async getMe(userId: number) {
+    const user = await this.authRepository.findById(userId);
+  }
 }

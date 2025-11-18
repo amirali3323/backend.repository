@@ -8,6 +8,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { MailerModule } from '@nestjs-modules/mailer';
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
+import { JwtStrategy } from './common/strategies/jwt.strategy';
 
 @Module({
   imports: [
@@ -53,7 +54,7 @@ import { LoggerMiddleware } from './common/middlewares/logger.middleware';
     LocationModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, JwtStrategy],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {

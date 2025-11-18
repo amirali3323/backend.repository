@@ -34,12 +34,11 @@ export class CreatePostDto {
 
   /** List of related location inputs */
   @IsNotEmpty()
-  locationInputs: LocationInputDto[];
+  districtIds: number[];
 
   /** Subcategory name (required) */
-  @IsString({ message: 'SubCategoryName must be a string' })
-  @IsNotEmpty({ message: 'SubCategoryName is required' })
-  declare category: string;
+  @IsNotEmpty({ message: 'SubCategoryId is required' })
+  declare subCategoryId: number;
 
   /** Whether to hide user’s phone number (default: false) */
   @Transform(({ value }) => (value === 'true' || value === true || value === 1 ? true : false))

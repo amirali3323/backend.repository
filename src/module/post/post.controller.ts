@@ -11,6 +11,7 @@ import {
   ParseIntPipe,
   Query,
   UploadedFile,
+  Res,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { RoleGuard } from 'src/common/guards/role.guard';
@@ -21,6 +22,8 @@ import { createMulterConfig } from 'src/common/config/multer.config';
 import { OptionalGuard } from 'src/common/guards/optional.guard';
 import { FeedFilterDto } from './dto/feedPostFilter.dto';
 import { CreatepwnerClaimDto } from './dto/createOwnerClaim.dto';
+import { JwtStrategy } from 'src/common/strategies/jwt.strategy';
+import type { Response } from 'express';
 
 @Controller('api/post')
 export class PostController {
@@ -55,9 +58,9 @@ export class PostController {
     @UploadedFiles() images: Express.Multer.File[],
     @Req() req: any,
   ) {
-    if (typeof createPostDto.locationInputs === 'string') {
-      createPostDto.locationInputs = JSON.parse(createPostDto.locationInputs);
-    }
+    // if (typeof createPostDto.locationInputs === 'string') {
+    //   createPostDto.locationInputs = JSON.parse(createPostDto.locationInputs);
+    // }
     const imageNames = images?.map((img) => img.filename) || [];
     createPostDto.mainImage = imageNames[0];
     createPostDto.extraImages = imageNames.slice(1);
@@ -83,5 +86,11 @@ export class PostController {
   ) {
     body.claimImage = claimImage.filename;
     return await this.postService.createOwnerClaim(body, req.user.id, postId);
+  }
+
+  @Get('image/:filename')
+  async getImage(@Param('filename') filename: string, @Res() res: Response) {
+    const filePath = await this.postService.getPostImagePath(filename);
+    return res.sendFile(filePath);
   }
 }

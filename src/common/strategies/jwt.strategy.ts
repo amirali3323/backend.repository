@@ -4,6 +4,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { InjectModel } from '@nestjs/sequelize';
 import { ConfigService } from '@nestjs/config';
 import { User } from 'src/module/auth/entities/user.entity';
+import { Request } from 'express';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -18,7 +19,18 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (req: Request) => {
+          const authHeader = req.headers['authorization'];
+          if (typeof authHeader === 'string') {
+            const parts = authHeader.split(' ');
+            if (parts[0] === 'Bearer' && parts[1]) {
+              return parts[1];
+            }
+          }
+          return null;
+        },
+      ]),
       ignoreExpiration: false,
       secretOrKey: secret,
     });

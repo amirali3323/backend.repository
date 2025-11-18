@@ -17,16 +17,21 @@ export class RoleGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const roles = this.reflector.get<string[]>('roles', context.getHandler()) || [];
     const request = context.switchToHttp().getRequest<Request>();
-    const token = request.cookies['access-token'] || request.headers['authorization']?.split(' ')[1];
-    if (!token) {
-      throw new ForbiddenException('No token provided', ErrorCode.RESET_TOKEN_MISSING);
-    }
+    const authHeader = request.headers['authorization'];
+    if (!authHeader) throw new ForbiddenException('No token provided', ErrorCode.RESET_TOKEN_MISSING);
+
+    const [bearer, token] = authHeader.split(' ');
+    if (bearer !== 'Bearer' || !token)
+      throw new ForbiddenException('Invalid token format', ErrorCode.INVALID_RESET_TOKEN);
+
     try {
       const payload = await this.jwtService.verify(token);
       const user = await this.authService.getUser(payload.userId);
+
       if (!user) {
         throw new ForbiddenException('User not found', ErrorCode.USER_NOT_FOUND);
       }
+
       request['user'] = user;
 
       if (roles.length && !roles.includes(user.role)) {

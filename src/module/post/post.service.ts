@@ -2,20 +2,19 @@ import { ConflictException, HttpStatus, Injectable } from '@nestjs/common';
 import { PostRepository } from './repositories/post.repository';
 import { CreatePostDto } from './dto/createPost.dto';
 import { AuthService } from '../auth/auth.service';
-import { NotFoundException,  } from 'src/common/exceptions';
+import { NotFoundException } from 'src/common/exceptions';
 import { ErrorCode } from 'src/common/enums/error-code.enum';
-import { PostStatus } from 'src/common/enums';
+import { PostStatus, SortOrder } from 'src/common/enums';
 import { LocationService } from '../location/location.service';
 import { PostImageRepository } from './repositories/postImages.repository';
 import { PostDistricRepository } from './repositories/postDistrict.repository';
-import { FeedFilterDto, SortOrder } from './dto/feedPostFilter.dto';
-import { SubCategory } from './entities/subCategory.entity';
-import { Category } from './entities/category.entity';
+import { FeedFilterDto } from './dto/feedPostFilter.dto';
 import { District } from '../location/entities/district.entity';
 import { Op } from 'sequelize';
 import { CreatepwnerClaimDto } from './dto/createOwnerClaim.dto';
 import { OwnerClaimRepositoy } from './repositories/ownerClaim.repository';
-
+import path from 'path';
+import * as fs from 'fs';
 @Injectable()
 export class PostService {
   constructor(
@@ -40,27 +39,19 @@ export class PostService {
       type,
       mainImage,
       extraImages,
-      category,
-      locationInputs,
+      districtIds,
+      subCategoryId,
       hidePhoneNumber,
       isWillingToChat,
       rewardAmount,
     } = createPostDto;
-
-    const [categoryName, subCategoryName] = category.split('-');
-
-    const subCategory = await this.postRepository.findSubCategoryByName(categoryName, subCategoryName);
-    if (!subCategory) throw new NotFoundException('SubCategory not found', ErrorCode.SUBCATEGORY_NOT_FOUND);
-
-    const districtIds = await this.locationService.getAllDistrictIdsWithNames(locationInputs);
-    if (!districtIds.length) throw new NotFoundException('location not found', ErrorCode.LOCATION_NOT_FOUND);
 
     const newPost = await this.postRepository.create({
       title,
       description,
       type,
       mainImage,
-      subCategoryId: subCategory.id,
+      subCategoryId,
       userId,
       hidePhoneNumber,
       isWillingToChat,
@@ -77,20 +68,18 @@ export class PostService {
     }
     return { message: 'Created post successfully' };
   }
+
   /** Get detailed post data (visible to owner or if approved) */
   async getPost(id: number, userId?: number) {
     const post = await this.postRepository.getPost(id);
     if (!post) throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
 
-    if (post.status === PostStatus.PENDING || post.status === PostStatus.REJECTED) {
+    if (post.status !== PostStatus.APPROVED) {
       if (userId !== post.userId) {
         throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
       }
     }
-    let phoneNumber: string | null = null;
-    if (!post.hidePhoneNumber) {
-      phoneNumber = await this.authService.getPhoneNumber(post.userId);
-    }
+
     const plain = post.get({ plain: true });
     return {
       id: plain.id,
@@ -104,7 +93,6 @@ export class PostService {
       })),
       category: plain.subCategory.category.categoryName,
       subCategory: plain.subCategory.subCategoryName,
-      phoneNumber,
       districts:
         plain.districts?.map((d) => ({
           districtName: d.districtName,
@@ -112,30 +100,23 @@ export class PostService {
         })) || [],
     };
   }
+
   /** Fetch public post feed with filters and pagination */
   async getFeed(query: FeedFilterDto) {
-    const { districtIds, subCategoryId, categoryId, type, sort, offset } = query;
+    const { districtIds, subCategoryIds, type, sort, offset } = query;
+
     return await this.postRepository.findAll({
-      where: { status: PostStatus.APPROVED, ...(type && { type }) },
+      where: {
+        status: PostStatus.APPROVED,
+        ...(type && { type }),
+        ...(subCategoryIds && { subCategoryId: { [Op.in]: subCategoryIds } }),
+      },
       include: [
-        {
-          model: SubCategory,
-          required: true,
-          attributes: [],
-          ...(subCategoryId && { where: { id: subCategoryId } }),
-          include: [
-            {
-              model: Category,
-              required: true,
-              attributes: [],
-              ...(categoryId && { where: { id: categoryId } }),
-            },
-          ],
-        },
-        ...(districtIds?.length
+        ...(districtIds?.length || districtIds
           ? [
               {
                 model: District,
+                as: 'districts',
                 attributes: ['districtName'],
                 through: { attributes: [] },
                 where: { id: { [Op.in]: districtIds } },
@@ -144,31 +125,46 @@ export class PostService {
             ]
           : []),
       ],
+
       attributes: ['id', 'title', 'type', 'mainImage', 'createdAt', 'rewardAmount'],
       order: [['createdAt', sort === SortOrder.OLDEST ? 'ASC' : 'DESC']],
       limit: 40,
       offset,
     });
   }
+
   /** Seed fake posts for testing */
   async seedFakePosts() {
     return await this.postRepository.seedFakePosts();
   }
 
   async createOwnerClaim(body: CreatepwnerClaimDto, claimantId: number, postId: number) {
-    const { claimImage, message, } = body;
+    const { claimImage, message } = body;
 
     const exsistPost = await this.postRepository.getPost(postId);
-    if (!exsistPost || exsistPost.status !== PostStatus.APPROVED) throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
+    if (!exsistPost || exsistPost.status !== PostStatus.APPROVED)
+      throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
 
     const hasClaimed = await this.ownerClaimRepository.hasClaimed(postId, claimantId);
     if (hasClaimed)
-      throw new ConflictException('You have already submitted an ownership claim for this post', ErrorCode.OWNER_CLAIM_ALREADY_EXISTS);
+      throw new ConflictException(
+        'You have already submitted an ownership claim for this post',
+        ErrorCode.OWNER_CLAIM_ALREADY_EXISTS,
+      );
 
     await this.ownerClaimRepository.create({ claimantId, postId, message, claimImage });
     return {
       message: 'Ownership claim submitted successfully',
       statusCode: HttpStatus.CREATED,
     };
+  }
+
+  async getPostImagePath(filename: string): Promise<string> {
+    const filePath = path.join(process.cwd(), 'uploads', 'postimages', filename);
+
+    if (!fs.existsSync(filePath)) {
+      throw new NotFoundException('File not found', ErrorCode.IMAGE_NOT_FOUND);
+    }
+    return filePath;
   }
 }

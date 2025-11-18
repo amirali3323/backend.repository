@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Res, UseGuards, UseInterceptors, UploadedFile, Req } from '@nestjs/common';
+import { Controller, Post, Body, Res, UseGuards, UseInterceptors, UploadedFile, Req, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signupUser.dto';
 import { LoginUserDto } from './dto/loginUser.dto';
@@ -16,7 +16,7 @@ import { resendVerificationEmailDto } from './dto/resendVerificationEmail.dto';
 
 @Controller('api/auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   // Register a new user
   @Post('signup')
@@ -28,8 +28,7 @@ export class AuthController {
   @Post('verify-email')
   async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto, @Res({ passthrough: true }) res: Response) {
     const result = await this.authService.verifyEmail(verifyEmailDto);
-    res.cookie('access-token', result.token, { httpOnly: true, maxAge: 24*60*60*1000 });
-    return { message: 'Login successful' }
+    return { ...result, message: 'Login successful' };
   }
 
   // Resend verification email
@@ -38,12 +37,11 @@ export class AuthController {
     return await this.authService.resendVerificationEmail(body);
   }
 
-  // Login user and set cookie
+  // Login user
   @Post('login')
   async login(@Body() loginUserDto: LoginUserDto, @Res({ passthrough: true }) res: Response) {
     const result = await this.authService.login(loginUserDto);
-    res.cookie('access-token', result.token, { httpOnly: true, maxAge: 24*60*60*1000 });
-    return { message: 'Login successful' }
+    return { ...result, message: 'Login successful' };
   }
 
   // Send password reset email
@@ -55,7 +53,7 @@ export class AuthController {
   // Reset password with token
   @Post('reset-password')
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
-    return await this.authService.resetPassword(resetPasswordDto)
+    return await this.authService.resetPassword(resetPasswordDto);
   }
 
   // Upload/update profile image for authenticated users
@@ -65,6 +63,11 @@ export class AuthController {
   @UseInterceptors(FileInterceptor('file', createMulterConfig('./uploads/avatars')))
   async uploadProfileImage(@UploadedFile() file: Express.Multer.File, @Req() req: Request) {
     await this.authService.updateProfileImage(req['userId'], file.filename);
-    return { message: 'Profile image uploaded successfully' }
+    return { message: 'Profile image uploaded successfully' };
   }
+
+  @UseGuards(RoleGuard)
+  @Roles('user')
+  @Get('me')
+  async getMe(@Req() req: any) {}
 }

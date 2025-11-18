@@ -1,13 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsNotEmpty, IsNumber } from 'class-validator';
-import { Type } from 'class-transformer';
-import { PostType } from '../entities/post.entity';
-
-/** Sorting options for feed results */
-export enum SortOrder {
-  NEWEST = 'newest',
-  OLDEST = 'oldest',
-}
+import { IsEnum, IsOptional, IsNotEmpty, IsNumber, IsArray } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { SortOrder, PostType } from '../../../common/enums/index';
 
 /**
  * DTO for filtering and sorting post feed
@@ -16,19 +10,25 @@ export enum SortOrder {
 export class FeedFilterDto {
   /** List of district IDs to filter by (optional) */
   @IsOptional()
-  @Type(() => Number)
+  @IsArray()
+  @Transform(({ value }) => {
+    if (typeof value === 'string' && !value.includes(',')) return [Number(value)];
+    if (typeof value === 'string') return value.split(',').map((v) => Number(v.trim()));
+    if (Array.isArray(value)) return value.map(Number);
+    return [];
+  })
   districtIds?: number[];
 
   /** Filter by specific subcategory (optional) */
   @ApiPropertyOptional({ description: 'Subcategory ID', example: 5 })
   @IsOptional()
   @Type(() => Number)
-  subCategoryId?: number;
+  subCategoryIds?: number[];
 
   /** Filter by specific category (optional) */
-  @IsOptional()
-  @Type(() => Number)
-  categoryId?: number;
+  // @IsOptional()
+  // @Type(() => Number)
+  // categoryId?: number;
 
   /** Sort posts by newest or oldest (default: newest) */
   @IsOptional()

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import jwt, { SignOptions, JwtPayload } from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'defaultSecret';
+const JWT_SECRET = 'mehtarkhil1@';
 
 @Injectable()
 export class CustomJwtService {
