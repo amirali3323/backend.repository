@@ -1,4 +1,4 @@
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import { ListFilterDto } from '../dto/feedPostFilter.dto';
 import { PostStatus, SortOrder } from 'src/common/enums';
 import { District } from 'src/module/location/entities/district.entity';
@@ -12,7 +12,8 @@ export class PostQueryBuilder {
 
     if (type) where.type = type;
     if (subCategoryIds?.length) where.subCategoryId = { [Op.in]: subCategoryIds };
-    if (keyword) where[Op.or] = [{ title: { [Op.like]: `%${keyword}%` } }, { description: { [Op.like]: `%${keyword}%` } }];
+    if (keyword)
+      where[Op.or] = [{ title: { [Op.like]: `%${keyword}%` } }, { description: { [Op.like]: `%${keyword}%` } }];
 
     const include = districtIds?.length
       ? [
@@ -30,6 +31,24 @@ export class PostQueryBuilder {
     return {
       where,
       include,
+      attributes: [
+        'id',
+        'title',
+        'type',
+        'mainImage',
+        'createdAt',
+        'rewardAmount',
+        [
+          Sequelize.literal(`(
+      SELECT d.districtName
+      FROM PostDistricts pd
+      JOIN Districts d ON d.id = pd.districtId
+      WHERE pd.postId = Post.id
+      LIMIT 1
+    )`),
+          'districtName',
+        ],
+      ],
       order: [['createdAt', sort === SortOrder.OLDEST ? 'ASC' : 'DESC']],
       limit: 40,
       offset,

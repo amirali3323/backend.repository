@@ -1,4 +1,5 @@
 import { Table, Column, Model, DataType, HasMany, BelongsTo, BelongsToMany } from 'sequelize-typescript';
+import { Notification } from 'src/module/notification/entities/notification.entity';
 import { OwnerClaim } from 'src/module/post/entities/ownerClaim.entity';
 import { Post } from 'src/module/post/entities/post.entity';
 
@@ -67,4 +68,7 @@ export class User extends Model<
 
   @BelongsToMany(()=> Post, ()=> OwnerClaim)
   declare ownerClaims: OwnerClaim[];
+
+  @HasMany(()=> Notification)
+  declare notifications: Notification[];
 }

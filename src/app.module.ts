@@ -9,6 +9,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 import { JwtStrategy } from './common/strategies/jwt.strategy';
+import { NotificationModule } from './module/notification/notification.module';
+import { AdminModule } from './module/admin/admin.module';
 
 @Module({
   imports: [
@@ -56,6 +58,8 @@ import { JwtStrategy } from './common/strategies/jwt.strategy';
     AuthModule,
     PostModule,
     LocationModule,
+    NotificationModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService, JwtStrategy],

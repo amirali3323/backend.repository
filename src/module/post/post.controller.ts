@@ -24,10 +24,16 @@ import { ListFilterDto } from './dto/feedPostFilter.dto';
 import { CreatepwnerClaimDto } from './dto/createOwnerClaim.dto';
 import { JwtStrategy } from 'src/common/strategies/jwt.strategy';
 import type { Response } from 'express';
+import { NotFoundException } from 'src/common/exceptions';
+import { ErrorCode } from 'src/common/enums';
+import { AuthService } from '../auth/auth.service';
 
 @Controller('api/post')
 export class PostController {
-  constructor(private readonly postService: PostService) {}
+  constructor(
+    private readonly postService: PostService,
+    private readonly authService: AuthService,
+  ) {}
 
   /** Seed database with fake posts (for testing) */
   @Get('seedFakePosts')
@@ -58,9 +64,6 @@ export class PostController {
     @UploadedFiles() images: Express.Multer.File[],
     @Req() req: any,
   ) {
-    // if (typeof createPostDto.locationInputs === 'string') {
-    //   createPostDto.locationInputs = JSON.parse(createPostDto.locationInputs);
-    // }
     const imageNames = images?.map((img) => img.filename) || [];
     createPostDto.mainImage = imageNames[0];
     createPostDto.extraImages = imageNames.slice(1);
@@ -70,8 +73,27 @@ export class PostController {
   /** Get detailed post info by ID (accessible to all, including guests) */
   @UseGuards(OptionalGuard)
   @Get(':id')
-  async getPost(@Param('id', ParseIntPipe) postId: number, @Req() req?: any) {
-    return await this.postService.getPost(postId, req.user?.id);
+  async getPost(@Param('id', ParseIntPipe) postId: number, @Req() req: any) {
+    const post = await this.postService.getPost(postId, req.user?.id);
+    return {
+      id: post.id,
+      title: post.title,
+      description: post.description,
+      type: post.type,
+      status: post.status,
+      mainImage: post.mainImage,
+      extraImage: post.images?.map((d) => ({
+        image: d.imageUrl,
+      })),
+      category: post.subCategory.category.categoryName,
+      subCategory: post.subCategory.subCategoryName,
+      districts:
+        post.districts?.map((d) => ({
+          districtName: d.districtName,
+          provinceName: d.province?.provinceName,
+        })) || [],
+      rewardAmount: post.rewardAmount,
+    };
   }
 
   @Post(':postId/owner-claims')
@@ -98,6 +120,10 @@ export class PostController {
   @UseGuards(RoleGuard)
   @Roles('user')
   async getPhoneNumber(@Param('postId') postId: number) {
-    return await this.postService.getPhoneNumber(postId);
+    const post = await this.postService.getPost(postId);
+    if(!post) throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
+
+    const phoneNumber = this.authService.getPhoneNumber(post.userId);
+    return {phoneNumber};
   }
 }

@@ -73,33 +73,10 @@ export class PostService {
     const post = await this.postRepository.getPost(id);
     if (!post) throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
 
-    if (post.status !== PostStatus.APPROVED) {
-      if (userId !== post.userId) {
-        throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
-      }
-    }
+    if (post.status !== PostStatus.APPROVED)
+      if (userId !== post.userId) throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
 
-
-    const plain = post.get({ plain: true });
-    return {
-      id: plain.id,
-      title: plain.title,
-      description: plain.description,
-      type: plain.type,
-      status: plain.status,
-      mainImage: plain.mainImage,
-      extraImage: plain.images?.map((d) => ({
-        image: d.imageUrl,
-      })),
-      category: plain.subCategory.category.categoryName,
-      subCategory: plain.subCategory.subCategoryName,
-      districts:
-        plain.districts?.map((d) => ({
-          districtName: d.districtName,
-          provinceName: d.province?.provinceName,
-        })) || [],
-      rewardAmount: plain.rewardAmount,
-    };
+    return post;
   }
 
   /** Fetch public post feed with filters and pagination */
