@@ -160,8 +160,12 @@ export class AuthService {
   // Get phone number of a user by ID
   async getPhoneNumber(id: number) {
     const user = await this.authRepository.findById(id);
-    if (!user) throw new NotFoundException('User not found', ErrorCode.USER_NOT_FOUND);
-    return user.phoneNumber;
+    if(user) return user.phoneNumber;
+  }
+
+  async getEmail(id: number) {
+    const user = await this.authRepository.findById(id);
+    if(user) return user.email;
   }
 
   async getMe(userId: number) {

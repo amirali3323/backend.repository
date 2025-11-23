@@ -48,7 +48,6 @@ export class PostRepository {
     userId: number;
     subCategoryId: number;
     hidePhoneNumber: boolean;
-    isWillingToChat: boolean;
     rewardAmount: string;
   }): Promise<Post> {
     return await this.postModel.create(data);
@@ -213,7 +212,6 @@ export class PostRepository {
         userId: randomUser,
         subCategoryId: randomSub.id,
         hidePhoneNumber: Math.random() > 0.7,
-        isWillingToChat: Math.random() > 0.3,
         status: randomStatus,
       });
 

@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsEnum, IsBoolean } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsEnum, IsBoolean, ArrayNotEmpty, IsArray, IsNumber } from 'class-validator';
 import { PostType } from '../entities/post.entity';
 import { LocationInputDto } from './locationInput.dto';
 import { Transform } from 'class-transformer';
@@ -33,7 +33,16 @@ export class CreatePostDto {
   declare extraImages: string[];
 
   /** List of related location inputs */
-  @IsNotEmpty()
+  @Transform(({ value }) =>
+    Array.isArray(value)
+      ? value.map((v) => Number(v))
+      : typeof value === 'string'
+      ? value.split(',').map((v) => Number(v))
+      : []
+  )
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsNumber({}, { each: true })
   districtIds: number[];
 
   /** Subcategory name (required) */
@@ -46,11 +55,11 @@ export class CreatePostDto {
   @IsOptional()
   hidePhoneNumber: boolean = false;
 
-  /** Whether user is willing to chat (default: true) */
-  @Transform(({ value }) => (value === 'true' || value === true || value === 1 ? true : false))
-  @IsBoolean()
-  @IsOptional()
-  isWillingToChat: boolean = true;
+  // /** Whether user is willing to chat (default: true) */
+  // @Transform(({ value }) => (value === 'true' || value === true || value === 1 ? true : false))
+  // @IsBoolean()
+  // @IsOptional()
+  // isWillingToChat: boolean = true;
 
   /** Optional reward amount for lost/found item */
   @IsOptional()

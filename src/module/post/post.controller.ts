@@ -12,6 +12,7 @@ import {
   Query,
   UploadedFile,
   Res,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { RoleGuard } from 'src/common/guards/role.guard';
@@ -121,9 +122,8 @@ export class PostController {
   @Roles('user')
   async getPhoneNumber(@Param('postId') postId: number) {
     const post = await this.postService.getPost(postId);
-    if(!post) throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
-
-    const phoneNumber = this.authService.getPhoneNumber(post.userId);
+    if(!post || post.hidePhoneNumber) throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
+    const phoneNumber = await this.authService.getPhoneNumber(post.userId);
     return {phoneNumber};
   }
 }

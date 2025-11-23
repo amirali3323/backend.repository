@@ -4,7 +4,7 @@ import { CreatePostDto } from './dto/createPost.dto';
 import { AuthService } from '../auth/auth.service';
 import { NotFoundException } from 'src/common/exceptions';
 import { ErrorCode } from 'src/common/enums/error-code.enum';
-import { PostStatus } from 'src/common/enums';
+import { PostStatus, PostType } from 'src/common/enums';
 import { LocationService } from '../location/location.service';
 import { PostImageRepository } from './repositories/postImages.repository';
 import { PostDistricRepository } from './repositories/postDistrict.repository';
@@ -14,6 +14,7 @@ import { OwnerClaimRepositoy } from './repositories/ownerClaim.repository';
 import path from 'path';
 import * as fs from 'fs';
 import { PostQueryBuilder } from './query/post.query-builder';
+import { MailService } from 'src/common/services/mail.service';
 @Injectable()
 export class PostService {
   constructor(
@@ -22,7 +23,7 @@ export class PostService {
     private readonly postDistricRepository: PostDistricRepository,
     private readonly ownerClaimRepository: OwnerClaimRepositoy,
     private readonly authService: AuthService,
-    private readonly locationService: LocationService,
+    private readonly mailService: MailService,
   ) {}
 
   /** Seed database with default categories and subcategories */
@@ -41,10 +42,8 @@ export class PostService {
       districtIds,
       subCategoryId,
       hidePhoneNumber,
-      isWillingToChat,
       rewardAmount,
     } = createPostDto;
-
     const newPost = await this.postRepository.create({
       title,
       description,
@@ -53,7 +52,6 @@ export class PostService {
       subCategoryId,
       userId,
       hidePhoneNumber,
-      isWillingToChat,
       rewardAmount,
     });
 
@@ -65,16 +63,26 @@ export class PostService {
     for (const districtId of districtIds) {
       await this.postDistricRepository.create(newPost.id, districtId);
     }
+
+    this.authService.getEmail(newPost.userId).then((email) => {
+      if(!email) return;
+      if (newPost.type === PostType.LOST) this.mailService.sendLostPostPendingApprovalEmail(email, newPost.title);
+      else this.mailService.sendFoundPostPendingApprovalEmail(email, newPost.title);
+    });
     return { message: 'Created post successfully' };
   }
 
   /** Get detailed post data (visible to owner or if approved) */
   async getPost(id: number, userId?: number) {
     const post = await this.postRepository.getPost(id);
-    if (!post) throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
+    if (!post) {
+      console.log('1')
+      throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);}
 
     if (post.status !== PostStatus.APPROVED)
-      if (userId !== post.userId) throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
+      if (userId !== post.userId) {
+        console.log('here')
+        throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);}
 
     return post;
   }
@@ -106,6 +114,12 @@ export class PostService {
       );
 
     await this.ownerClaimRepository.create({ claimantId, postId, message, claimImage });
+
+    this.authService.getEmail(exsistPost.userId).then((emailAddress)=> {
+      if(!emailAddress) return;
+      if(exsistPost.type === PostType.LOST) this.mailService.sendLostPostOwnerClaimEmail(emailAddress, exsistPost.title);
+      else this.mailService.sendFoundPostOwnerClaimEmail(emailAddress, exsistPost.title);
+    })
     return {
       message: 'Ownership claim submitted successfully',
       statusCode: HttpStatus.CREATED,

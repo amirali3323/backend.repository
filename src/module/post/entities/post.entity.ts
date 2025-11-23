@@ -19,7 +19,6 @@ export class Post extends Model<
     userId: number;
     subCategoryId: number;
     hidePhoneNumber: boolean;
-    isWillingToChat: boolean;
     rewardAmount?: string;
     status?: PostStatus;
   }

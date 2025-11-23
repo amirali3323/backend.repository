@@ -2,6 +2,8 @@ import { District } from '../entities/district.entity';
 import { InjectModel } from '@nestjs/sequelize';
 import { Includeable, WhereOptions } from 'sequelize';
 import { Province } from '../entities/province.entity';
+import path from 'path';
+import * as fs from 'fs';
 
 export class LocationRepository {
   constructor(
@@ -35,8 +37,8 @@ export class LocationRepository {
       ],
       order: [['id', 'AsC']],
     });
-  }
 
+  }
   async seedIranCities() {
     const provincesData = [
       {

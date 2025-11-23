@@ -2,7 +2,10 @@ import { Table, Column, DataType, Model, HasMany, } from "sequelize-typescript";
 import { District } from "./district.entity";
 
 @Table({ tableName: 'Provinces' })
-export class Province extends Model<Province> {
+export class Province extends Model<Province,{
+  id: number,
+  provinceName: string,
+}> {
 
     @Column({
         type: DataType.STRING,
