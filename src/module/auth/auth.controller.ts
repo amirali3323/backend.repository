@@ -11,7 +11,6 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { createMulterConfig } from 'src/common/config/multer.config';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { resendVerificationEmailDto } from './dto/resendVerificationEmail.dto';
 
 @Controller('api/auth')

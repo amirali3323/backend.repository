@@ -19,13 +19,14 @@ export class ListFilterDto {
   /** Filter by specific subcategory (optional) */
   @ApiPropertyOptional({ description: 'Subcategory ID', example: 5 })
   @IsOptional()
-  @Type(() => Number)
+  @IsArray()
+  @Transform(({ value }) => {
+    if (typeof value === 'string' && !value.includes(',')) return [Number(value)];
+    if (typeof value === 'string') return value.split(',').map((v) => Number(v.trim()));
+    if (Array.isArray(value)) return value.map(Number);
+    return [];
+  })
   subCategoryIds?: number[];
-
-  /** Filter by specific category (optional) */
-  // @IsOptional()
-  // @Type(() => Number)
-  // categoryId?: number;
 
   /** Sort posts by newest or oldest (default: newest) */
   @IsOptional()
@@ -42,6 +43,7 @@ export class ListFilterDto {
   @IsNumber()
   offset: number;
 
+  /** Optional search keyword */
   @IsOptional()
   @IsString()
   keyword: string;

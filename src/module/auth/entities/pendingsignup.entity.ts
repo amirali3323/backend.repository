@@ -1,9 +1,5 @@
 import { Table, Column, Model, DataType } from 'sequelize-typescript';
 
-export enum UserRole {
-  ADMIN = 'admin',
-  USER = 'user',
-}
 @Table({ tableName: 'pendingsignup' })
 export class PendingSignup extends Model<
   PendingSignup,

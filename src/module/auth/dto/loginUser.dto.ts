@@ -6,9 +6,9 @@ export class LoginUserDto {
   @IsEmail()
   email: string;
 
-  /** User password (min 6 chars) */
+  /** User password (min 8 chars) */
   @IsString()
   @IsNotEmpty()
-  @MinLength(6, { message: 'password must be at least 6 characters' })
+  @MinLength(8, { message: 'password must be at least 8 characters' })
   password: string;
 }

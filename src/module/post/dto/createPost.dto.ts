@@ -1,6 +1,5 @@
 import { IsString, IsNotEmpty, IsOptional, IsEnum, IsBoolean, ArrayNotEmpty, IsArray, IsNumber } from 'class-validator';
 import { PostType } from '../entities/post.entity';
-import { LocationInputDto } from './locationInput.dto';
 import { Transform } from 'class-transformer';
 
 /**
@@ -37,8 +36,8 @@ export class CreatePostDto {
     Array.isArray(value)
       ? value.map((v) => Number(v))
       : typeof value === 'string'
-      ? value.split(',').map((v) => Number(v))
-      : []
+        ? value.split(',').map((v) => Number(v))
+        : [],
   )
   @IsArray()
   @ArrayNotEmpty()
@@ -55,13 +54,11 @@ export class CreatePostDto {
   @IsOptional()
   hidePhoneNumber: boolean = false;
 
-  // /** Whether user is willing to chat (default: true) */
-  // @Transform(({ value }) => (value === 'true' || value === true || value === 1 ? true : false))
-  // @IsBoolean()
-  // @IsOptional()
-  // isWillingToChat: boolean = true;
-
   /** Optional reward amount for lost/found item */
   @IsOptional()
   rewardAmount: string;
+
+  @IsOptional()
+  @Transform(({ value }) => Number(value))
+  featuredImageIndex: number;
 }

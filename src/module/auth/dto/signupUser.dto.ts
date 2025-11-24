@@ -7,10 +7,10 @@ export class SignupDto {
   @IsNotEmpty()
   name: string;
 
-  /** Password, min 6 chars */
+  /** Password, min 8 chars */
   @IsNotEmpty({ message: 'Password is required' })
   @IsString({ message: 'Password must be a string' })
-  @MinLength(6, { message: 'Password must be at least 6 characters long' })
+  @MinLength(8, { message: 'Password must be at least 8 characters long' })
   password: string;
 
   /** Phone number in IR format */

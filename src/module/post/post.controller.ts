@@ -49,7 +49,6 @@ export class PostController {
   }
 
   /** Get post feed with optional filters (category, district, type, sort, etc.) */
-  @UseGuards(OptionalGuard)
   @Get('list')
   async getList(@Query() query: ListFilterDto) {
     return await this.postService.getList(query);
@@ -59,15 +58,19 @@ export class PostController {
   @Post('createPost')
   @UseGuards(RoleGuard)
   @Roles('user')
-  @UseInterceptors(FilesInterceptor('images', 5, createMulterConfig('./uploads/postImages')))
+  @UseInterceptors(FilesInterceptor('images', 10, createMulterConfig('./uploads/postImages')))
   async createPost(
     @Body() createPostDto: CreatePostDto,
     @UploadedFiles() images: Express.Multer.File[],
     @Req() req: any,
   ) {
     const imageNames = images?.map((img) => img.filename) || [];
-    createPostDto.mainImage = imageNames[0];
-    createPostDto.extraImages = imageNames.slice(1);
+    console.log(createPostDto.featuredImageIndex)
+    createPostDto.mainImage = imageNames[createPostDto.featuredImageIndex];
+    // createPostDto.extraImages = imageNames.slice(0);
+    const extraImages = [...imageNames];
+    extraImages.splice(createPostDto.featuredImageIndex, 1);
+    createPostDto.extraImages = extraImages;
     return await this.postService.createPost(createPostDto, req.user.id);
   }
 
@@ -84,7 +87,7 @@ export class PostController {
       status: post.status,
       mainImage: post.mainImage,
       extraImage: post.images?.map((d) => ({
-        image: d.imageUrl,
+        src: d.imageUrl,
       })),
       category: post.subCategory.category.categoryName,
       subCategory: post.subCategory.subCategoryName,
@@ -97,6 +100,7 @@ export class PostController {
     };
   }
 
+  /** Upload an image for a post claim (User only) */
   @Post(':postId/owner-claims')
   @UseGuards(RoleGuard)
   @Roles('user')
@@ -111,19 +115,23 @@ export class PostController {
     return await this.postService.createOwnerClaim(body, req.user.id, postId);
   }
 
+  /** Serve a post image by filename */
   @Get('image/:filename')
   async getImage(@Param('filename') filename: string, @Res() res: Response) {
     const filePath = await this.postService.getPostImagePath(filename);
     return res.sendFile(filePath);
   }
 
+  /** Get the phone number of the post owner (User only) */
   @Get('phoneNumber/:postId')
   @UseGuards(RoleGuard)
   @Roles('user')
   async getPhoneNumber(@Param('postId') postId: number) {
+    ``;
     const post = await this.postService.getPost(postId);
-    if(!post || post.hidePhoneNumber) throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
+    if (!post) throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
+    if (post.hidePhoneNumber) return null;
     const phoneNumber = await this.authService.getPhoneNumber(post.userId);
-    return {phoneNumber};
+    return { phoneNumber };
   }
 }

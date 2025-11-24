@@ -20,14 +20,12 @@ export class RoleGuard implements CanActivate {
     const authHeader = request.headers['authorization'];
     if (!authHeader) throw new ForbiddenException('No token provided', ErrorCode.RESET_TOKEN_MISSING);
 
-    // const [bearer, token] = authHeader.split(' ');
-
-    // if (bearer !== 'Bearer' || !token)
-    //   throw new ForbiddenException('Invalid token format', ErrorCode.INVALID_RESET_TOKEN);
-    const token = authHeader;
-    if (!token) {
+    const [bearer, token] = authHeader.split(' ');
+    if (bearer !== 'Bearer' || !token)
       throw new ForbiddenException('Invalid token format', ErrorCode.INVALID_RESET_TOKEN);
-    }
+    if (!token)
+      throw new ForbiddenException('Invalid token format', ErrorCode.INVALID_RESET_TOKEN);
+
     try {
       const payload = await this.jwtService.verify(token);
       const user = await this.authService.getUser(payload.userId);

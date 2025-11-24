@@ -64,11 +64,11 @@ export class PostService {
       await this.postDistricRepository.create(newPost.id, districtId);
     }
 
-    this.authService.getEmail(newPost.userId).then((email) => {
-      if(!email) return;
-      if (newPost.type === PostType.LOST) this.mailService.sendLostPostPendingApprovalEmail(email, newPost.title);
-      else this.mailService.sendFoundPostPendingApprovalEmail(email, newPost.title);
-    });
+    // this.authService.getEmail(newPost.userId).then((email) => {
+    //   if(!email) return;
+    //   if (newPost.type === PostType.LOST) this.mailService.sendLostPostPendingApprovalEmail(email, newPost.title);
+    //   else this.mailService.sendFoundPostPendingApprovalEmail(email, newPost.title);
+    // });
     return { message: 'Created post successfully' };
   }
 
@@ -76,7 +76,6 @@ export class PostService {
   async getPost(id: number, userId?: number) {
     const post = await this.postRepository.getPost(id);
     if (!post) {
-      console.log('1')
       throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);}
 
     if (post.status !== PostStatus.APPROVED)

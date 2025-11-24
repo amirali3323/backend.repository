@@ -1,6 +1,12 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { AuthRepository } from './repositories/auth.repository';
-import { BadRequestException, ConflictException, GoneException, NotFoundException, UnauthorizedException } from 'src/common/exceptions';
+import {
+  BadRequestException,
+  ConflictException,
+  GoneException,
+  NotFoundException,
+  UnauthorizedException,
+} from 'src/common/exceptions';
 import { ErrorCode } from 'src/common/enums/error-code.enum';
 import { LoginUserDto } from './dto/loginUser.dto';
 import { BcryptService } from 'src/common/services/bcrypt.service';
@@ -160,14 +166,16 @@ export class AuthService {
   // Get phone number of a user by ID
   async getPhoneNumber(id: number) {
     const user = await this.authRepository.findById(id);
-    if(user) return user.phoneNumber;
+    if (user) return user.phoneNumber;
   }
 
+  /** Get the email of a user by their ID */
   async getEmail(id: number) {
     const user = await this.authRepository.findById(id);
-    if(user) return user.email;
+    if (user) return user.email;
   }
 
+  /** Get full user info for the currently logged-in user */
   async getMe(userId: number) {
     const user = await this.authRepository.findById(userId);
   }

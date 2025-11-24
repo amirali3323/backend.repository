@@ -3,18 +3,25 @@ import { ListFilterDto } from '../dto/feedPostFilter.dto';
 import { PostStatus, SortOrder } from 'src/common/enums';
 import { District } from 'src/module/location/entities/district.entity';
 
+/**
+ * Utility to build Sequelize query for fetching post feeds with optional filters
+ */
 export class PostQueryBuilder {
   static buildFeedQuery(filters: ListFilterDto): any {
     const { keyword, offset, districtIds, sort, subCategoryIds, type } = filters;
+
+    // Base condition: only approved posts
     const where: any = {
       status: PostStatus.APPROVED,
     };
 
+    // Optional filters
     if (type) where.type = type;
     if (subCategoryIds?.length) where.subCategoryId = { [Op.in]: subCategoryIds };
     if (keyword)
       where[Op.or] = [{ title: { [Op.like]: `%${keyword}%` } }, { description: { [Op.like]: `%${keyword}%` } }];
 
+    // Include districts if filtered
     const include = districtIds?.length
       ? [
           {
@@ -28,6 +35,7 @@ export class PostQueryBuilder {
         ]
       : [];
 
+    // Return full query object
     return {
       where,
       include,

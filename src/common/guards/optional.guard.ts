@@ -12,7 +12,7 @@ export class OptionalGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
-    const token = request.cookies['access-token'] || request.headers['authorization']?.split(' ')[1];
+    const token =  request.headers['authorization']?.split(' ')[1];
 
     if (!token) {
       request['user'] = null;

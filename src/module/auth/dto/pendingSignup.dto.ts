@@ -6,10 +6,10 @@ export class PendingSignupDto {
   @IsNotEmpty()
   name: string;
 
-  /** Password for pending signup (min 6 chars) */
+  /** Password for pending signup (min 8 chars) */
   @IsNotEmpty()
   @IsString()
-  @MinLength(6, { message: 'password must be at least 6 characters' })
+  @MinLength(8, { message: 'password must be at least 8 characters' })
   password: string;
 
   /** Phone number (Iran format) */
