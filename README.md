@@ -104,23 +104,22 @@ npm run start:dev
 npm run start:prod
 ```
 
-## 📌 Roadmap / TODOs
+### 📌 Roadmap / TODOs
 - Complete admin moderation panel
 - Cloud image storage (S3 / Cloudinary)
 - Report/block system for posts or users
 - Advanced search and filtering
 - Multi-language support
 
-### 🔔 Notification Module (Planned / Info)
+## 🔔 Notification Module (Planned / Info)
 - When a new post matches a user's existing posts, a **notification is created** in the system
 - Additionally, an **email is sent** to notify the user about the match
 - Users can see the notification when they log into the website
 
-###👤 Author
-
+### 👤 Author
 Amirali – Backend Developer (NestJS / TypeScript)
 GitHub: https://github.com/amirali3323
 
-### 📄 License
+## 📄 License
 
 MIT License
