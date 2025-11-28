@@ -64,10 +64,9 @@ export class PostController {
     @UploadedFiles() images: Express.Multer.File[],
     @Req() req: any,
   ) {
+
     const imageNames = images?.map((img) => img.filename) || [];
-    console.log(createPostDto.featuredImageIndex)
     createPostDto.mainImage = imageNames[createPostDto.featuredImageIndex];
-    // createPostDto.extraImages = imageNames.slice(0);
     const extraImages = [...imageNames];
     extraImages.splice(createPostDto.featuredImageIndex, 1);
     createPostDto.extraImages = extraImages;

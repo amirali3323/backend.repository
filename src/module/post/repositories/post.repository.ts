@@ -7,7 +7,7 @@ import { SubCategory } from '../entities/subCategory.entity';
 import { Province } from 'src/module/location/entities/province.entity';
 import { Category } from '../entities/category.entity';
 import { PostImage } from '../entities/postImage.entity';
-import { Includeable, WhereOptions } from 'sequelize';
+import { Includeable, Sequelize, WhereOptions } from 'sequelize';
 import { PostDistrict } from '../entities/postDistrict.entity';
 
 @Injectable()
@@ -23,6 +23,7 @@ export class PostRepository {
     private districtModel: typeof District,
     @InjectModel(PostDistrict)
     private postDistricModel: typeof PostDistrict,
+    // private sequelize: Sequelize,
   ) {}
   /** Find a subcategory by its name and parent category name */
   async findSubCategoryByName(categoryName: string, subCategoryName: string) {
@@ -360,4 +361,12 @@ export class PostRepository {
       totalPosts: createdPosts.length,
     };
   }
+
+  // async getStats() {
+  //   return await this.postModel.findAll({
+  //     attributes: ['status', [sequelize.fn('COUNT', sequelize.col('status')), 'count']],
+  //     group: ['status'],
+  //     raw: true,
+  //   });
+  // }
 }

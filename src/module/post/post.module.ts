@@ -20,6 +20,7 @@ import { OwnerClaim } from './entities/ownerClaim.entity';
     AuthModule,
     LocationModule
   ],
+  exports: [PostService],
   controllers: [PostController],
   providers: [PostService, OwnerClaimRepositoy, PostRepository, PostDistricRepository, PostImageRepository, ],
 })
