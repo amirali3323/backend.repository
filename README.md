@@ -125,10 +125,13 @@ FRONT_ORIGIN=http://localhost:3000
 ### Install Dependencies
 ```bash
 npm install
-
+```
+```bash
 npm run start:dev
-
+```
+```bash
 npm run start:prod
+```
 
 ## 📌 Roadmap / TODOs
 - Complete admin moderation panel
@@ -142,7 +145,7 @@ npm run start:prod
 - Additionally, an **email is sent** to notify the user about the match
 - Users can see the notification when they log into the website
 
-👤 Author
+###👤 Author
 
 Amirali – Backend Developer (NestJS / TypeScript)
 GitHub: https://github.com/amirali3323
