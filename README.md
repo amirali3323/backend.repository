@@ -71,9 +71,13 @@ The backend follows **NestJS modular architecture** best practices and provides 
 Create a `.env` file:
 
 DB_HOST=localhost
+
 DB_PORT=3306
+
 DB_USER=root
+
 DB_PASS=123456
+
 DB_DATABASE=peydamishe
 
 JWT_SECRET=mySuperSecretKey123
