@@ -68,6 +68,7 @@ The backend follows **NestJS modular architecture** best practices and provides 
 
 ## 📁 Project Structure
 
+
 src/
 ├── modules/
 │ ├── auth/
@@ -87,11 +88,11 @@ src/
 │ ├── service/
 │ └── strategies/
 ├── main.ts
-└── app.module.ts
-uploads/
-.env
-package.json
-README.md
+├── app.module.ts
+├── uploads/
+├── .env
+├── package.json
+└── README.md
 
 ---
 
