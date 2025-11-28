@@ -69,30 +69,33 @@ The backend follows **NestJS modular architecture** best practices and provides 
 ## 📁 Project Structure
 
 
+## 📁 Project Structure
+
 src/
 ├── modules/
-│ ├── auth/
-│ ├── post/
-│ ├── admin/
-│ ├── location/
-│ └── notification/
+│   ├── auth/
+│   ├── post/
+│   ├── admin/
+│   ├── location/
+│   └── notification/
 ├── common/
-│ ├── config/
-│ ├── decorators/
-│ ├── enums/
-│ ├── exceptions/
-│ ├── filters/
-│ ├── guards/
-│ ├── interceptors/
-│ ├── middlewares/
-│ ├── service/
-│ └── strategies/
+│   ├── config/
+│   ├── decorators/
+│   ├── enums/
+│   ├── exceptions/
+│   ├── filters/
+│   ├── guards/
+│   ├── interceptors/
+│   ├── middlewares/
+│   ├── service/
+│   └── strategies/
 ├── main.ts
 ├── app.module.ts
 ├── uploads/
 ├── .env
 ├── package.json
 └── README.md
+
 
 ---
 
