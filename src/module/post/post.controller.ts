@@ -126,7 +126,6 @@ export class PostController {
   @UseGuards(RoleGuard)
   @Roles('user')
   async getPhoneNumber(@Param('postId') postId: number) {
-    ``;
     const post = await this.postService.getPost(postId);
     if (!post) throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
     if (post.hidePhoneNumber) return null;

@@ -179,4 +179,9 @@ export class AuthService {
   async getMe(userId: number) {
     const user = await this.authRepository.findById(userId);
   }
+
+  /** Count all users */
+  async getUserCounts() {
+    return await this.authRepository.getUserCount();
+  }
 }

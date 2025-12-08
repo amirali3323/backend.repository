@@ -79,7 +79,7 @@ export class Post extends Model<
   declare hidePhoneNumber: boolean;
 
   /** The user who created the post */
-  @BelongsTo(() => User)
+  @BelongsTo(() => User, { as: 'owner' })
   declare user: User;
 
   /** Foreign key for the user who owns the post */
@@ -100,8 +100,7 @@ export class Post extends Model<
   @Column
   declare subCategoryId: number;
 
-  @BelongsToMany(()=> User, ()=> OwnerClaim)
+  @BelongsToMany(() => User, () => OwnerClaim, 'ownerClaims')
   declare claiments: User[];
 }
 export { PostType };
-

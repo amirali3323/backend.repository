@@ -5,7 +5,6 @@ import { AuthService } from '../auth/auth.service';
 import { NotFoundException } from 'src/common/exceptions';
 import { ErrorCode } from 'src/common/enums/error-code.enum';
 import { PostStatus, PostType } from 'src/common/enums';
-import { LocationService } from '../location/location.service';
 import { PostImageRepository } from './repositories/postImages.repository';
 import { PostDistricRepository } from './repositories/postDistrict.repository';
 import { ListFilterDto } from './dto/feedPostFilter.dto';
@@ -15,6 +14,8 @@ import path from 'path';
 import * as fs from 'fs';
 import { PostQueryBuilder } from './query/post.query-builder';
 import { MailService } from 'src/common/services/mail.service';
+import { plainToInstance } from 'class-transformer';
+import { AdminPostDetailDto } from '../admin/dto/admin-post-detail.dto';
 @Injectable()
 export class PostService {
   constructor(
@@ -65,7 +66,7 @@ export class PostService {
     }
 
     this.authService.getEmail(newPost.userId).then((email) => {
-      if(!email) return;
+      if (!email) return;
       if (newPost.type === PostType.LOST) this.mailService.sendLostPostPendingApprovalEmail(email, newPost.title);
       else this.mailService.sendFoundPostPendingApprovalEmail(email, newPost.title);
     });
@@ -76,11 +77,13 @@ export class PostService {
   async getPost(id: number, userId?: number) {
     const post = await this.postRepository.getPost(id);
     if (!post) {
-      throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);}
+      throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
+    }
 
     if (post.status !== PostStatus.APPROVED)
       if (userId !== post.userId) {
-        throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);}
+        throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
+      }
 
     return post;
   }
@@ -113,11 +116,12 @@ export class PostService {
 
     await this.ownerClaimRepository.create({ claimantId, postId, message, claimImage });
 
-    this.authService.getEmail(exsistPost.userId).then((emailAddress)=> {
-      if(!emailAddress) return;
-      if(exsistPost.type === PostType.LOST) this.mailService.sendLostPostOwnerClaimEmail(emailAddress, exsistPost.title);
+    this.authService.getEmail(exsistPost.userId).then((emailAddress) => {
+      if (!emailAddress) return;
+      if (exsistPost.type === PostType.LOST)
+        this.mailService.sendLostPostOwnerClaimEmail(emailAddress, exsistPost.title);
       else this.mailService.sendFoundPostOwnerClaimEmail(emailAddress, exsistPost.title);
-    })
+    });
     return {
       message: 'Ownership claim submitted successfully',
       statusCode: HttpStatus.CREATED,
@@ -143,8 +147,68 @@ export class PostService {
     const phoneNumber = await this.authService.getPhoneNumber(post.userId);
     return { phoneNumber };
   }
+  س;
 
-  async getPostStats() {
-    return await this.postRepository.getStats();
+  /** Count posts by status */
+  async getPostStatusCount() {
+    const postStatsBystatus = await this.postRepository.getPostStatsByStatus();
+    const statusStats = postStatsBystatus.reduce((acc, item) => {
+      acc[item.status] = Number(item.count);
+      return acc;
+    }, {});
+    return {
+      approved: statusStats.APPROVED || 0,
+      pending: statusStats.PENDING || 0,
+      resolved: statusStats.RESOLVED || 0,
+      rejected: statusStats.REJECTED || 0,
+    };
+  }
+
+  /** Count posts by province */
+  async getPostprovinceCount() {
+    const postStatsByProvince = await this.postRepository.getPostCountByProvince();
+    const postProvinceCounts = postStatsByProvince.reduce((acc, item) => {
+      acc[item.provinceName] = Number(item.count);
+      return acc;
+    }, {});
+    return postProvinceCounts;
+  }
+
+  /** Percentage of lost/found posts */
+  async getPostTypePercent() {
+    const postStatsByType = await this.postRepository.getPostCountByType();
+    const typeStats = postStatsByType.reduce((acc, item) => {
+      acc[item.type] = Number(item.count);
+      return acc;
+    }, {});
+
+    const lost = typeStats.lost;
+    const found = typeStats.found;
+
+    const total = (lost || 0) + (found || 0);
+    return {
+      lost: total ? Math.round((lost / total) * 100) : 0,
+      found: total ? Math.round((found / total) * 100) : 0,
+    };
+  }
+
+  async getPostByStatus(offset: number, status?: PostStatus) {
+    const Posts = await this.postRepository.getPostsByStatus(offset, status);
+    return Posts.map((post) => ({
+      ...post.get({ plain: true }),
+      images: post.images.map((img) => img.imageUrl),
+      districts: post.districts.map((d) => d.districtName),
+      subCategory: post.subCategory.subCategoryName,
+    }));
+  }
+
+  /** Get full post details for admin (no status restriction) */
+  async getPostForAdmin(id: number) {
+    const post = await this.postRepository.getPostWithUser(id);
+    if (!post) throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
+
+    return plainToInstance(AdminPostDetailDto, post.get({ plain: true }), {
+      excludeExtraneousValues: true,
+    });
   }
 }

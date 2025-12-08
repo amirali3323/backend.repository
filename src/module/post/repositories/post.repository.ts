@@ -7,8 +7,10 @@ import { SubCategory } from '../entities/subCategory.entity';
 import { Province } from 'src/module/location/entities/province.entity';
 import { Category } from '../entities/category.entity';
 import { PostImage } from '../entities/postImage.entity';
-import { Includeable, Sequelize, WhereOptions } from 'sequelize';
+import { Includeable, WhereOptions } from 'sequelize';
 import { PostDistrict } from '../entities/postDistrict.entity';
+import sequelize from 'sequelize/lib/sequelize';
+import { User } from 'src/module/auth/entities/user.entity';
 
 @Injectable()
 export class PostRepository {
@@ -362,11 +364,134 @@ export class PostRepository {
     };
   }
 
-  // async getStats() {
-  //   return await this.postModel.findAll({
-  //     attributes: ['status', [sequelize.fn('COUNT', sequelize.col('status')), 'count']],
-  //     group: ['status'],
-  //     raw: true,
-  //   });
-  // }
+  async getPostStatsByStatus(): Promise<any> {
+    return await this.postModel.findAll({
+      attributes: ['status', [sequelize.fn('COUNT', sequelize.col('status')), 'count']],
+      group: ['status'],
+      raw: true,
+    });
+  }
+
+  async getPostCountByProvince(): Promise<any> {
+    return await this.postModel.findAll({
+      attributes: [
+        [sequelize.col('Districts.Province.provinceName'), 'provinceName'],
+        [sequelize.fn('COUNT', sequelize.col('Post.id')), 'count'],
+      ],
+      include: [
+        {
+          model: District,
+          attributes: [],
+          through: { attributes: [] },
+          include: [
+            {
+              model: Province,
+              attributes: [],
+            },
+          ],
+        },
+      ],
+      group: ['Districts.Province.provinceName'],
+      raw: true,
+    });
+  }
+
+  async getPostCountByType(): Promise<any> {
+    return await this.postModel.findAll({
+      attributes: ['type', [sequelize.fn('COUNT', sequelize.col('type')), 'count']],
+      group: ['type'],
+      raw: true,
+    });
+  }
+
+  async getPostsByStatus(offset: number, status?: PostStatus): Promise<Post[]> {
+    const whereClause: any = {};
+    if (status) whereClause.status = status;
+
+    return await this.postModel.findAll({
+      where: whereClause,
+      attributes: [
+        'id',
+        'title',
+        'description',
+        'type',
+        'mainImage',
+        'rewardAmount',
+        'hidePhoneNumber',
+        'updatedAt',
+        'status',
+      ],
+      limit: 20,
+      offset,
+      order: [['updatedAt', 'DESC']],
+      include: [
+        {
+          model: User,
+          as: 'owner',
+          attributes: ['name', 'phoneNumber', 'email'],
+          required: true,
+        },
+        {
+          model: PostImage,
+          attributes: ['imageUrl'],
+        },
+        {
+          model: District,
+          as: 'districts',
+          attributes: ['districtName'],
+          through: { attributes: [] },
+          required: true,
+        },
+        {
+          model: SubCategory,
+          attributes: ['subCategoryName'],
+          required: true,
+        },
+      ],
+    });
+  }
+
+  async getPostWithUser(id: number): Promise<Post | null> {
+    return await this.postModel.findOne({
+      where: { id },
+      attributes: ['title', 'description', 'type', 'status', 'mainImage', 'rewardAmount', 'hidePhoneNumber'],
+      include: [
+        {
+          model: District,
+          through: { attributes: [] },
+          attributes: ['districtName'],
+          required: true,
+          include: [
+            {
+              model: Province,
+              attributes: ['provinceName'],
+              required: true,
+            },
+          ],
+        },
+        {
+          model: PostImage,
+          required: false,
+          attributes: ['imageUrl'],
+        },
+        {
+          model: SubCategory,
+          attributes: ['subCategoryName'],
+          required: true,
+          include: [
+            {
+              model: Category,
+              attributes: ['categoryName'],
+              required: true,
+            },
+          ],
+        },
+        {
+          model: User,
+          as: 'owner',
+          attributes: ['id', 'name', 'email', 'phoneNumber', 'createdAt'],
+        },
+      ],
+    });
+  }
 }

@@ -63,10 +63,10 @@ export class User extends Model<
   declare avatarUrl?: string;
 
   // User's posts (one-to-many relation)
-  @HasMany(() => Post)
+  @HasMany(() => Post, {as: 'posts'})
   posts: Post[];
 
-  @BelongsToMany(()=> Post, ()=> OwnerClaim)
+  @BelongsToMany(()=> Post, ()=> OwnerClaim, 'ownerClaims')
   declare ownerClaims: OwnerClaim[];
 
   @HasMany(()=> Notification)
