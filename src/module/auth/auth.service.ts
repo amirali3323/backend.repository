@@ -84,7 +84,13 @@ export class AuthService {
     this.mailService.sendWelcomeEmail(email, newUser.name);
     this.pendingSignupRepository.delete(pendingSignup.id);
     const token = await this.jwtService.sign(newUser.id, { expiresIn: '1d' });
-    return { token };
+    return {
+      token,
+      id: newUser.id,
+      name: newUser.name,
+      role: newUser.role,
+      avatarUrl: newUser.avatarUrl,
+    };
   }
 
   // Resend verification email with new code
@@ -110,7 +116,13 @@ export class AuthService {
     if (!isMatch) throw new UnauthorizedException('Incorrect password', ErrorCode.INVALID_PASSWORD);
 
     const token = await this.jwtService.sign(exsistUser.id, { expiresIn: '1d' });
-    return { token };
+    return {
+      token,
+      id: exsistUser.id,
+      name: exsistUser.name,
+      role: exsistUser.role,
+      avatarUrl: exsistUser.avatarUrl,
+    };
   }
 
   // Send password reset email with token

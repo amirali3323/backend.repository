@@ -15,12 +15,6 @@ export class AdminController {
     private readonly authService: AuthService,
   ) {}
 
-  // @Post(':postId/:newStatus')
-  // @UseGuards(RoleGuard)
-  // @Roles('admin')
-  // async updatePostStatus(@Param('postId') postId: number, @Param) {
-  // }
-
   @Get('dashboard-stats')
   @UseGuards(RoleGuard)
   @Roles('admin')
