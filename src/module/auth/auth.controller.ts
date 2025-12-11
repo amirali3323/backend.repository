@@ -66,7 +66,9 @@ export class AuthController {
   }
 
   @UseGuards(RoleGuard)
-  @Roles('user')
+  @Roles('user', 'admin')
   @Get('me')
-  async getMe(@Req() req: any) {}
+  async getMe(@Req() req: any) {
+    return await this.authService.getMe(req?.user.id);
+  }
 }

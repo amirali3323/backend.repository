@@ -19,6 +19,7 @@ import dayjs from 'dayjs';
 import { ForgotPasswordDto } from './dto/forgotPassword.dto';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { resendVerificationEmailDto } from './dto/resendVerificationEmail.dto';
+import { error } from 'console';
 
 @Injectable()
 export class AuthService {
@@ -187,9 +188,11 @@ export class AuthService {
     if (user) return user.email;
   }
 
-  /** Get full user info for the currently logged-in user */
+  /** Get user info for the currently logged-in user */
   async getMe(userId: number) {
-    const user = await this.authRepository.findById(userId);
+    const user = await this.authRepository.getMe(userId);
+    if(!user) throw new NotFoundException('User not found', ErrorCode.USER_NOT_FOUND);
+    return user;
   }
 
   /** Count all users */

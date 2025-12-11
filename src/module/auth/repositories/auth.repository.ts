@@ -46,4 +46,11 @@ export class AuthRepository implements IAuthRepository {
   async getUserCount(): Promise<any> {
     return await this.userModel.count();
   }
+
+  async getMe(id: number) {
+    return await this.userModel.findOne({
+      where: {id},
+      attributes: ['name', 'role', 'avatarUrl', 'email', 'phoneNumber'],
+    })
+  }
 }

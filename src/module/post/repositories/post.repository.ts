@@ -413,11 +413,9 @@ export class PostRepository {
       attributes: [
         'id',
         'title',
-        'description',
         'type',
         'mainImage',
         'rewardAmount',
-        'hidePhoneNumber',
         'updatedAt',
         'status',
       ],
@@ -426,25 +424,10 @@ export class PostRepository {
       order: [['updatedAt', 'DESC']],
       include: [
         {
-          model: User,
-          as: 'owner',
-          attributes: ['name', 'phoneNumber', 'email'],
-          required: true,
-        },
-        {
-          model: PostImage,
-          attributes: ['imageUrl'],
-        },
-        {
           model: District,
           as: 'districts',
           attributes: ['districtName'],
           through: { attributes: [] },
-          required: true,
-        },
-        {
-          model: SubCategory,
-          attributes: ['subCategoryName'],
           required: true,
         },
       ],

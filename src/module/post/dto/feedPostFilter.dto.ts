@@ -40,7 +40,7 @@ export class ListFilterDto {
 
   /** Pagination offset (required) */
   @IsNotEmpty()
-  @IsNumber()
+  @Type(() => Number)
   offset: number;
 
   /** Optional search keyword */

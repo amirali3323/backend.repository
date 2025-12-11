@@ -196,9 +196,8 @@ export class PostService {
     const Posts = await this.postRepository.getPostsByStatus(offset, status);
     return Posts.map((post) => ({
       ...post.get({ plain: true }),
-      images: post.images.map((img) => img.imageUrl),
-      districts: post.districts.map((d) => d.districtName),
-      subCategory: post.subCategory.subCategoryName,
+      districtName: post.districts?.[0]?.districtName || null,
+      districts: undefined,
     }));
   }
 
