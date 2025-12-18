@@ -1,6 +1,10 @@
-import { Expose, Transform } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
+import { AdminOwnerPostDto } from './admin-post-owner.dto';
 
 export class AdminPostDetailDto {
+  @Expose()
+  id: number;
+
   @Expose()
   title: string;
 
@@ -21,6 +25,13 @@ export class AdminPostDetailDto {
 
   @Expose()
   hidePhoneNumber: boolean;
+
+  @Expose()
+  createdAt: string;
+
+  @Expose()
+  @Type(()=> AdminOwnerPostDto)
+  owner: AdminOwnerPostDto;
 
   @Expose()
   @Transform(({ obj }) => obj.images?.map((img) => img.imageUrl) ?? [])

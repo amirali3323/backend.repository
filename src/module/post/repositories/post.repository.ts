@@ -410,18 +410,10 @@ export class PostRepository {
 
     return await this.postModel.findAll({
       where: whereClause,
-      attributes: [
-        'id',
-        'title',
-        'type',
-        'mainImage',
-        'rewardAmount',
-        'updatedAt',
-        'status',
-      ],
+      attributes: ['id', 'title', 'type', 'mainImage', 'rewardAmount', 'createdAt', 'status'],
       limit: 20,
       offset,
-      order: [['updatedAt', 'DESC']],
+      order: [['createdAt', 'DESC']],
       include: [
         {
           model: District,
@@ -437,7 +429,16 @@ export class PostRepository {
   async getPostWithUser(id: number): Promise<Post | null> {
     return await this.postModel.findOne({
       where: { id },
-      attributes: ['title', 'description', 'type', 'status', 'mainImage', 'rewardAmount', 'hidePhoneNumber'],
+      attributes: [
+        'title',
+        'description',
+        'type',
+        'status',
+        'mainImage',
+        'rewardAmount',
+        'hidePhoneNumber',
+        'createdAt',
+      ],
       include: [
         {
           model: District,
@@ -473,8 +474,13 @@ export class PostRepository {
           model: User,
           as: 'owner',
           attributes: ['id', 'name', 'email', 'phoneNumber', 'createdAt'],
+          required: true,
         },
       ],
     });
+  }
+
+  async updateStatus(id: number, status: PostStatus) {
+    return await this.postModel.update({ status }, { where: { id } });
   }
 }

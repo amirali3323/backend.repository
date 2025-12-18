@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { frontOrigin } from 'src/main';
+import { PostStatus } from '../enums';
+import { POST_STATUS_EMAIL_TEMPLATES } from './post-status-email.tmpelates';
 
 @Injectable()
 export class MailService {
@@ -137,4 +139,24 @@ export class MailService {
     `,
     });
   }
+
+  async sendPostStatusChangedEmail(
+  to: string,
+  title: string,
+  status: PostStatus,
+  message?: string,
+) {
+  const template = POST_STATUS_EMAIL_TEMPLATES[status];
+
+  if (!template) {
+    throw new Error(`No email template for status: ${status}`);
+  }
+
+  return this.mailerService.sendMail({
+    to,
+    subject: template.subject(title),
+    html: template.html(title, message),
+  });
+}
+
 }

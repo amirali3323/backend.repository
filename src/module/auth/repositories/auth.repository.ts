@@ -1,7 +1,8 @@
 import { User } from '../entities/user.entity';
 import { InjectModel } from '@nestjs/sequelize';
 import { IAuthRepository } from '../interfaces/auth.repo.interface';
-import sequelize from 'sequelize/lib/sequelize';
+import { Post } from 'src/module/post/entities/post.entity';
+import { col, fn } from 'sequelize';
 
 export class AuthRepository implements IAuthRepository {
   constructor(
@@ -49,8 +50,26 @@ export class AuthRepository implements IAuthRepository {
 
   async getMe(id: number) {
     return await this.userModel.findOne({
-      where: {id},
+      where: { id },
       attributes: ['name', 'role', 'avatarUrl', 'email', 'phoneNumber'],
-    })
+    });
+  }
+
+  async getUsers(offset: number) {
+    return await this.userModel.findAll({
+      attributes: ['id', 'name', 'email', 'phoneNumber', 'createdAt', [fn('COUNT', col('posts.id')), 'postCount']],
+      order: [['createdAt', 'DESC']],
+      offset,
+      include: [
+        {
+          model: Post,
+          as: 'posts',
+          attributes: [],
+          required: false,
+        }
+      ],
+      group: ['User.id']
+
+    });
   }
 }

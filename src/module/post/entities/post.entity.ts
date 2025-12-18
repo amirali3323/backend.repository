@@ -80,7 +80,7 @@ export class Post extends Model<
 
   /** The user who created the post */
   @BelongsTo(() => User, { as: 'owner' })
-  declare user: User;
+  declare owner: User;
 
   /** Foreign key for the user who owns the post */
   @ForeignKey(() => User)
@@ -103,4 +103,3 @@ export class Post extends Model<
   @BelongsToMany(() => User, () => OwnerClaim, 'ownerClaims')
   declare claiments: User[];
 }
-export { PostType };

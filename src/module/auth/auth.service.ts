@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { AuthRepository } from './repositories/auth.repository';
 import {
   BadRequestException,
@@ -19,7 +19,6 @@ import dayjs from 'dayjs';
 import { ForgotPasswordDto } from './dto/forgotPassword.dto';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { resendVerificationEmailDto } from './dto/resendVerificationEmail.dto';
-import { error } from 'console';
 
 @Injectable()
 export class AuthService {
@@ -85,13 +84,7 @@ export class AuthService {
     this.mailService.sendWelcomeEmail(email, newUser.name);
     this.pendingSignupRepository.delete(pendingSignup.id);
     const token = await this.jwtService.sign(newUser.id, { expiresIn: '1d' });
-    return {
-      token,
-      id: newUser.id,
-      name: newUser.name,
-      role: newUser.role,
-      avatarUrl: newUser.avatarUrl,
-    };
+    return { token };
   }
 
   // Resend verification email with new code
@@ -117,13 +110,7 @@ export class AuthService {
     if (!isMatch) throw new UnauthorizedException('Incorrect password', ErrorCode.INVALID_PASSWORD);
 
     const token = await this.jwtService.sign(exsistUser.id, { expiresIn: '1d' });
-    return {
-      token,
-      id: exsistUser.id,
-      name: exsistUser.name,
-      role: exsistUser.role,
-      avatarUrl: exsistUser.avatarUrl,
-    };
+    return { token };
   }
 
   // Send password reset email with token
@@ -191,12 +178,17 @@ export class AuthService {
   /** Get user info for the currently logged-in user */
   async getMe(userId: number) {
     const user = await this.authRepository.getMe(userId);
-    if(!user) throw new NotFoundException('User not found', ErrorCode.USER_NOT_FOUND);
+    if (!user) throw new NotFoundException('User not found', ErrorCode.USER_NOT_FOUND);
     return user;
   }
 
   /** Count all users */
   async getUserCounts() {
     return await this.authRepository.getUserCount();
+  }
+
+  async getUsers(offset: number) {
+    const users = await this.authRepository.getUsers(offset);
+    return users;
   }
 }

@@ -16,6 +16,7 @@ import { PostQueryBuilder } from './query/post.query-builder';
 import { MailService } from 'src/common/services/mail.service';
 import { plainToInstance } from 'class-transformer';
 import { AdminPostDetailDto } from '../admin/dto/admin-post-detail.dto';
+import { UpdateStatusDto } from '../admin/dto/updateStatus.dto';
 @Injectable()
 export class PostService {
   constructor(
@@ -209,5 +210,15 @@ export class PostService {
     return plainToInstance(AdminPostDetailDto, post.get({ plain: true }), {
       excludeExtraneousValues: true,
     });
+  }
+
+  async updateStatus(postId: number, body: UpdateStatusDto) {
+    const { message, status } = body;
+    const post = await this.postRepository.getPostWithUser(postId);
+    if (!post) throw new NotFoundException('post not found', ErrorCode.POST_NOT_FOUND);
+
+    await this.postRepository.updateStatus(postId, status);
+    this.mailService.sendPostStatusChangedEmail(post.owner.email, post.title, post.status, message);
+    return 'success';
   }
 }

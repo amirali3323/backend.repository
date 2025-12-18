@@ -1,5 +1,5 @@
 import { IsString, IsNotEmpty, IsOptional, IsEnum, IsBoolean, ArrayNotEmpty, IsArray, IsNumber } from 'class-validator';
-import { PostType } from '../entities/post.entity';
+import { PostType } from 'src/common/enums';
 import { Transform } from 'class-transformer';
 
 /**

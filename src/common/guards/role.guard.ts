@@ -18,12 +18,15 @@ export class RoleGuard implements CanActivate {
     const roles = this.reflector.get<string[]>('roles', context.getHandler()) || [];
     const request = context.switchToHttp().getRequest<Request>();
     const authHeader = request.headers['authorization'];
-    if (!authHeader) throw new ForbiddenException('No token provided', ErrorCode.RESET_TOKEN_MISSING);
+    if (!authHeader) {
+      throw new ForbiddenException('No token provided', ErrorCode.RESET_TOKEN_MISSING);
+    }
     const [bearer, token] = authHeader.split(' ');
     if (bearer !== 'Bearer' || !token)
-      throw new ForbiddenException('Invalid token format', ErrorCode.INVALID_RESET_TOKEN);
-    if (!token)
-      throw new ForbiddenException('Invalid token format', ErrorCode.INVALID_RESET_TOKEN);
+      {
+        throw new ForbiddenException('Invalid token format', ErrorCode.INVALID_RESET_TOKEN);
+      }
+    if (!token) throw new ForbiddenException('Invalid token format', ErrorCode.INVALID_RESET_TOKEN);
 
     try {
       const payload = await this.jwtService.verify(token);
@@ -35,7 +38,6 @@ export class RoleGuard implements CanActivate {
       if (roles.length && !roles.includes(user.role)) {
         throw new ForbiddenException('Access denied', ErrorCode.FORBIDDEN);
       }
-
       return true;
     } catch (err) {
       throw new ForbiddenException('Invalid token or access denied', ErrorCode.INVALID_RESET_TOKEN);

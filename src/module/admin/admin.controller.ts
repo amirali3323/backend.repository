@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { RoleGuard } from 'src/common/guards/role.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
@@ -6,6 +6,7 @@ import { PostService } from '../post/post.service';
 import { AuthService } from '../auth/auth.service';
 import type { PostStats } from '../post/interfaces/postStats.interface';
 import { PostStatus } from 'src/common/enums';
+import { UpdateStatusDto } from './dto/updateStatus.dto';
 
 @Controller('api/admin')
 export class AdminController {
@@ -44,5 +45,19 @@ export class AdminController {
   @Roles('admin')
   async getPost(@Param('postId') postId: number) {
     return await this.postService.getPostForAdmin(postId);
+  }
+
+  @Put('posts/:postId/status')
+  @UseGuards(RoleGuard)
+  @Roles('admin')
+  async updateStatus(@Param('postId') postId: number, @Body() body: UpdateStatusDto) {
+    return await this.postService.updateStatus(postId, body)
+  }
+
+  @Get('users')
+  @UseGuards(RoleGuard)
+  @Roles('admin')
+  async getUser(@Query('offset') offset: number) {
+    return await this.authService.getUsers(offset);
   }
 }
