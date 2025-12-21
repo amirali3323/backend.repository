@@ -11,6 +11,7 @@ import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 import { JwtStrategy } from './common/strategies/jwt.strategy';
 import { NotificationModule } from './module/notification/notification.module';
 import { AdminModule } from './module/admin/admin.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { AdminModule } from './module/admin/admin.module';
         },
       }),
     }),
+    EventEmitterModule.forRoot(),
     AuthModule,
     PostModule,
     LocationModule,

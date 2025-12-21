@@ -17,6 +17,8 @@ import { MailService } from 'src/common/services/mail.service';
 import { plainToInstance } from 'class-transformer';
 import { AdminPostDetailDto } from '../admin/dto/admin-post-detail.dto';
 import { UpdateStatusDto } from '../admin/dto/updateStatus.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Post } from './entities/post.entity';
 @Injectable()
 export class PostService {
   constructor(
@@ -26,6 +28,7 @@ export class PostService {
     private readonly ownerClaimRepository: OwnerClaimRepositoy,
     private readonly authService: AuthService,
     private readonly mailService: MailService,
+    private readonly eventEmmiter: EventEmitter2,
   ) {}
 
   /** Seed database with default categories and subcategories */
@@ -34,7 +37,7 @@ export class PostService {
   }
 
   /** Create a new post with images, category, and location mapping */
-  async createPost(createPostDto: CreatePostDto, userId: number) {
+  async createPost(body: CreatePostDto, userId: number) {
     const {
       title,
       description,
@@ -45,7 +48,7 @@ export class PostService {
       subCategoryId,
       hidePhoneNumber,
       rewardAmount,
-    } = createPostDto;
+    } = body;
     const newPost = await this.postRepository.create({
       title,
       description,
@@ -71,6 +74,8 @@ export class PostService {
       if (newPost.type === PostType.LOST) this.mailService.sendLostPostPendingApprovalEmail(email, newPost.title);
       else this.mailService.sendFoundPostPendingApprovalEmail(email, newPost.title);
     });
+
+    this.eventEmmiter.emit('post.created', { userId, type, title });
     return { message: 'Created post successfully' };
   }
 
@@ -148,7 +153,6 @@ export class PostService {
     const phoneNumber = await this.authService.getPhoneNumber(post.userId);
     return { phoneNumber };
   }
-  س;
 
   /** Count posts by status */
   async getPostStatusCount() {
@@ -163,16 +167,6 @@ export class PostService {
       resolved: statusStats.RESOLVED || 0,
       rejected: statusStats.REJECTED || 0,
     };
-  }
-
-  /** Count posts by province */
-  async getPostprovinceCount() {
-    const postStatsByProvince = await this.postRepository.getPostCountByProvince();
-    const postProvinceCounts = postStatsByProvince.reduce((acc, item) => {
-      acc[item.provinceName] = Number(item.count);
-      return acc;
-    }, {});
-    return postProvinceCounts;
   }
 
   /** Percentage of lost/found posts */
@@ -193,7 +187,7 @@ export class PostService {
     };
   }
 
-  async getPostByStatus(offset: number, status?: PostStatus) {
+  async getPostByStatus(offset: number, status?: PostStatus, userId?: number) {
     const Posts = await this.postRepository.getPostsByStatus(offset, status);
     return Posts.map((post) => ({
       ...post.get({ plain: true }),
@@ -212,6 +206,7 @@ export class PostService {
     });
   }
 
+  /** Update post status, notify owner and similar post owners if approved */
   async updateStatus(postId: number, body: UpdateStatusDto) {
     const { message, status } = body;
     const post = await this.postRepository.getPostWithUser(postId);
@@ -219,6 +214,18 @@ export class PostService {
 
     await this.postRepository.updateStatus(postId, status);
     this.mailService.sendPostStatusChangedEmail(post.owner.email, post.title, post.status, message);
+
+    if (status.toUpperCase() === PostStatus.APPROVED) {
+      const districtIds = post.districts?.map((d) => d.id) || [];
+      this.eventEmmiter.emit('post.notify-similar', { post, districtIds });
+    }
     return 'success';
+  }
+
+  /** Find posts of opposite type in same subcategory and districts */
+  async findSimilarPosts(post: Post, districtIds: number[]): Promise<Post[]> {
+    if (post.type === PostType.LOST)
+      return await this.postRepository.findSimilarPostById(post.id, post.subCategoryId, districtIds, PostType.FOUND);
+    return await this.postRepository.findSimilarPostById(post.id, post.subCategoryId, districtIds, PostType.LOST);
   }
 }

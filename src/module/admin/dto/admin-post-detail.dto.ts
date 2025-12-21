@@ -30,12 +30,12 @@ export class AdminPostDetailDto {
   createdAt: string;
 
   @Expose()
-  @Type(()=> AdminOwnerPostDto)
+  @Type(() => AdminOwnerPostDto)
   owner: AdminOwnerPostDto;
 
   @Expose()
-  @Transform(({ obj }) => obj.images?.map((img) => img.imageUrl) ?? [])
-  images: string[];
+  @Transform(({ obj }) => obj.images?.map((img) => ({ src: img.imageUrl })) ?? [])
+  images: { src: string }[];
 
   @Expose()
   @Transform(

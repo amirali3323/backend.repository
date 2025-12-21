@@ -2,8 +2,8 @@ import { District } from '../entities/district.entity';
 import { InjectModel } from '@nestjs/sequelize';
 import { Includeable, WhereOptions } from 'sequelize';
 import { Province } from '../entities/province.entity';
-import path from 'path';
-import * as fs from 'fs';
+import sequelize from 'sequelize/lib/sequelize';
+import { Post } from 'src/module/post/entities/post.entity';
 
 export class LocationRepository {
   constructor(
@@ -351,4 +351,30 @@ export class LocationRepository {
       districts: districtCount,
     };
   }
+
+  async getPostCountByProvince(): Promise<any> {
+  return await this.provinceModel.findAll({
+    attributes: [
+      ['provinceName', 'provinceName'],
+      [sequelize.fn('COUNT', sequelize.col('Districts.Posts.id')), 'count'],
+    ],
+    include: [
+      {
+        model: District,
+        attributes: [],
+        include: [
+          {
+            model: Post,
+            attributes: [],
+            required: false,
+          },
+        ],
+        required: false,
+      },
+    ],
+    group: ['Province.id'],
+    raw: true,
+  });
+}
+
 }

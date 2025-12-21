@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { frontOrigin } from 'src/main';
-import { PostStatus } from '../enums';
+import { PostStatus, PostType } from '../enums';
 import { POST_STATUS_EMAIL_TEMPLATES } from './post-status-email.tmpelates';
 
 @Injectable()
 export class MailService {
   constructor(private readonly mailerService: MailerService) {}
 
+  /** Send welcome email to a new user */
   async sendWelcomeEmail(to: string, name: string) {
     return this.mailerService.sendMail({
       to,
@@ -29,6 +30,7 @@ export class MailService {
     });
   }
 
+  /** Send email verification code */
   async sendEmailVerification(to: string, code: string) {
     return this.mailerService.sendMail({
       to,
@@ -44,6 +46,7 @@ export class MailService {
     });
   }
 
+  /** Send password reset link */
   async sendForgetPasswordEmail(to: string, token: string) {
     const url = new URL(`/auth/reset-password?token=${token}`, frontOrigin).toString();
     return this.mailerService.sendMail({
@@ -59,6 +62,7 @@ export class MailService {
     });
   }
 
+  /** Notify user that their lost post is pending approval */
   async sendLostPostPendingApprovalEmail(to: string, title: string) {
     return this.mailerService.sendMail({
       to,
@@ -78,6 +82,7 @@ export class MailService {
     });
   }
 
+  /** Notify user that their found post is pending approval */
   async sendFoundPostPendingApprovalEmail(to: string, title: string) {
     return this.mailerService.sendMail({
       to,
@@ -98,6 +103,7 @@ export class MailService {
     });
   }
 
+  /** Notify owner that someone claimed their lost post */
   async sendLostPostOwnerClaimEmail(to: string, postTitle: string) {
     return this.mailerService.sendMail({
       to,
@@ -119,6 +125,7 @@ export class MailService {
     });
   }
 
+  /** Notify owner that someone claimed their found post */
   async sendFoundPostOwnerClaimEmail(to: string, postTitle: string) {
     return this.mailerService.sendMail({
       to,
@@ -140,23 +147,54 @@ export class MailService {
     });
   }
 
-  async sendPostStatusChangedEmail(
-  to: string,
-  title: string,
-  status: PostStatus,
-  message?: string,
-) {
-  const template = POST_STATUS_EMAIL_TEMPLATES[status];
+  /** Notify user about a post status change (approved, rejected, etc.) */
+  async sendPostStatusChangedEmail(to: string, title: string, status: PostStatus, message?: string) {
+    const template = POST_STATUS_EMAIL_TEMPLATES[status];
 
-  if (!template) {
-    throw new Error(`No email template for status: ${status}`);
+    if (!template) {
+      throw new Error(`No email template for status: ${status}`);
+    }
+
+    return this.mailerService.sendMail({
+      to,
+      subject: template.subject(title),
+      html: template.html(title, message),
+    });
   }
 
-  return this.mailerService.sendMail({
-    to,
-    subject: template.subject(title),
-    html: template.html(title, message),
-  });
-}
+  /** Notify owners of similar posts about a newly created related post */
+  async sendSimilarPostEmail(
+    to: string,
+    newPostTitle: string,
+    type: PostType,
+    originalPostTitle?: string,
+    postId?: number,
+  ) {
+    if (!to) return;
 
+    const actionText =
+      type === PostType.LOST
+        ? `ممکن است کالای گمشده شما پیدا شده باشد. آگهی مشابه با عنوان "${originalPostTitle}" ثبت شده است.`
+        : `ممکن است آگهی پیدا شده شما مربوط به یکی از گمشدگان باشد. آگهی مشابه با عنوان "${originalPostTitle}" ثبت شده است.`;
+
+    const subject = type === PostType.LOST ? 'آگهی مشابهی ممکن است برای شما مهم باشد 🔔' : 'یک آگهی مرتبط ثبت شد 🔔';
+
+    const link = postId ? `${frontOrigin}/posts/${postId}` : '#';
+
+    return this.mailerService.sendMail({
+      to,
+      subject,
+      html: `
+      <div style="font-family: sans-serif; line-height: 1.6; direction: rtl; text-align: right;">
+        <h2 style="color:#007bff;">سلام 👋</h2>
+        <p>یک آگهی جدید ثبت شده که ممکن است با آگهی شما مرتبط باشد:</p>
+        <p><strong style="color:#333;">${newPostTitle}</strong></p>
+        <p style="background:#f0f0f0; padding:10px; border-radius:5px;">${actionText}</p>
+        <p>برای مشاهده جزئیات آگهی، روی لینک زیر کلیک کنید:</p>
+        <p><a href="${link}" style="color:#007bff; text-decoration:none;">مشاهده آگهی</a></p>
+        <p style="margin-top:20px;">با تشکر،<br>تیم "پیدا میشه" 🌟</p>
+      </div>
+    `,
+    });
+  }
 }

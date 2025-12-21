@@ -57,7 +57,7 @@ export class AuthController {
 
   // Upload/update profile image for authenticated users
   @UseGuards(RoleGuard)
-  @Roles('user')
+  @Roles('user', 'admin')
   @Post('avatar')
   @UseInterceptors(FileInterceptor('file', createMulterConfig('./uploads/avatars')))
   async uploadProfileImage(@UploadedFile() file: Express.Multer.File, @Req() req: Request) {
@@ -71,4 +71,9 @@ export class AuthController {
   async getMe(@Req() req: any) {
     return await this.authService.getMe(req?.user.id);
   }
+
+  // @UseGuards(RoleGuard)
+  // @Roles('user', 'admin')
+  // @Post('updateAvatar')
+  // @UseInterceptors(FileInter)
 }

@@ -7,14 +7,13 @@ import { appConfig } from './common/config/app.config';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptors';
 
-export const frontOrigin = 'http://172.16.112.244:3000';
+export const frontOrigin = 'http://localhost:3000';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new ResponseInterceptor());
-
   app.useGlobalPipes(new ValidationPipe(validationConfig));
   app.enableCors({
     origin: frontOrigin,

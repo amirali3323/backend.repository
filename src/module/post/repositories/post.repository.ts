@@ -7,7 +7,7 @@ import { SubCategory } from '../entities/subCategory.entity';
 import { Province } from 'src/module/location/entities/province.entity';
 import { Category } from '../entities/category.entity';
 import { PostImage } from '../entities/postImage.entity';
-import { Includeable, WhereOptions } from 'sequelize';
+import { Includeable, Op, WhereOptions } from 'sequelize';
 import { PostDistrict } from '../entities/postDistrict.entity';
 import sequelize from 'sequelize/lib/sequelize';
 import { User } from 'src/module/auth/entities/user.entity';
@@ -364,6 +364,7 @@ export class PostRepository {
     };
   }
 
+  /** Get post counts grouped by status */
   async getPostStatsByStatus(): Promise<any> {
     return await this.postModel.findAll({
       attributes: ['status', [sequelize.fn('COUNT', sequelize.col('status')), 'count']],
@@ -372,6 +373,7 @@ export class PostRepository {
     });
   }
 
+  /** Get post counts grouped by province */
   async getPostCountByProvince(): Promise<any> {
     return await this.postModel.findAll({
       attributes: [
@@ -396,6 +398,7 @@ export class PostRepository {
     });
   }
 
+  /** Get post counts grouped by type (LOST / FOUND) */
   async getPostCountByType(): Promise<any> {
     return await this.postModel.findAll({
       attributes: ['type', [sequelize.fn('COUNT', sequelize.col('type')), 'count']],
@@ -404,9 +407,12 @@ export class PostRepository {
     });
   }
 
-  async getPostsByStatus(offset: number, status?: PostStatus): Promise<Post[]> {
-    const whereClause: any = {};
+  /** Get posts filtered by status and/or user with pagination */
+  async getPostsByStatus(offset: number, status?: PostStatus, userId?: number): Promise<Post[]> {
+    let whereClause: any = {};
     if (status) whereClause.status = status;
+
+    if (userId) whereClause.userId = userId;
 
     return await this.postModel.findAll({
       where: whereClause,
@@ -426,10 +432,12 @@ export class PostRepository {
     });
   }
 
+  /** Get full post details including owner, districts, images, and category */
   async getPostWithUser(id: number): Promise<Post | null> {
     return await this.postModel.findOne({
       where: { id },
       attributes: [
+        'id',
         'title',
         'description',
         'type',
@@ -437,13 +445,14 @@ export class PostRepository {
         'mainImage',
         'rewardAmount',
         'hidePhoneNumber',
+        'subCategoryId',
         'createdAt',
       ],
       include: [
         {
           model: District,
           through: { attributes: [] },
-          attributes: ['districtName'],
+          attributes: ['districtName', 'id'],
           required: true,
           include: [
             {
@@ -480,7 +489,24 @@ export class PostRepository {
     });
   }
 
+  /** Update the status of a post */
   async updateStatus(id: number, status: PostStatus) {
     return await this.postModel.update({ status }, { where: { id } });
+  }
+
+  /** Find similar posts in the same subcategory and districts, excluding the current post */
+  async findSimilarPostById(id: number, subCategoryId: number, districtIds: number[], type: PostType) {
+    return await this.postModel.findAll({
+      where: { subCategoryId, type, id: { [Op.ne]: id }, status: PostStatus.APPROVED },
+      include: [
+        {
+          model: District,
+          where: { id: districtIds },
+          through: { attributes: [] },
+          required: true,
+        },
+        { model: User, as: 'owner', attributes: ['email'] },
+      ],
+    });
   }
 }

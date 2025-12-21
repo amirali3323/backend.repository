@@ -12,7 +12,6 @@ import {
   Query,
   UploadedFile,
   Res,
-  ForbiddenException,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { RoleGuard } from 'src/common/guards/role.guard';
@@ -23,7 +22,6 @@ import { createMulterConfig } from 'src/common/config/multer.config';
 import { OptionalGuard } from 'src/common/guards/optional.guard';
 import { ListFilterDto } from './dto/feedPostFilter.dto';
 import { CreatepwnerClaimDto } from './dto/createOwnerClaim.dto';
-import { JwtStrategy } from 'src/common/strategies/jwt.strategy';
 import type { Response } from 'express';
 import { NotFoundException } from 'src/common/exceptions';
 import { ErrorCode } from 'src/common/enums';
@@ -57,20 +55,20 @@ export class PostController {
   /** Create a new post with uploaded images (User only) */
   @Post('createPost')
   @UseGuards(RoleGuard)
-  @Roles('user')
+  @Roles('user', 'admin')
   @UseInterceptors(FilesInterceptor('images', 10, createMulterConfig('./uploads/postImages')))
   async createPost(
-    @Body() createPostDto: CreatePostDto,
+    @Body() body: CreatePostDto,
     @UploadedFiles() images: Express.Multer.File[],
     @Req() req: any,
   ) {
 
     const imageNames = images?.map((img) => img.filename) || [];
-    createPostDto.mainImage = imageNames[createPostDto.featuredImageIndex];
+    body.mainImage = imageNames[body.featuredImageIndex];
     const extraImages = [...imageNames];
-    extraImages.splice(createPostDto.featuredImageIndex, 1);
-    createPostDto.extraImages = extraImages;
-    return await this.postService.createPost(createPostDto, req.user.id);
+    extraImages.splice(body.featuredImageIndex, 1);
+    body.extraImages = extraImages;
+    return await this.postService.createPost(body, req.user.id);
   }
 
   /** Get detailed post info by ID (accessible to all, including guests) */
@@ -102,7 +100,7 @@ export class PostController {
   /** Upload an image for a post claim (User only) */
   @Post(':postId/owner-claims')
   @UseGuards(RoleGuard)
-  @Roles('user')
+  @Roles('user', 'admin')
   @UseInterceptors(FileInterceptor('claimImage', createMulterConfig('./uploads/claimImages')))
   async createClaim(
     @Body() body: CreatepwnerClaimDto,
@@ -124,7 +122,7 @@ export class PostController {
   /** Get the phone number of the post owner (User only) */
   @Get('phoneNumber/:postId')
   @UseGuards(RoleGuard)
-  @Roles('user')
+  @Roles('user', 'admin')
   async getPhoneNumber(@Param('postId') postId: number) {
     const post = await this.postService.getPost(postId);
     if (!post) throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);

@@ -14,14 +14,25 @@ import { PostImageRepository } from './repositories/postImages.repository';
 import { PostDistrict } from './entities/postDistrict.entity';
 import { OwnerClaimRepositoy } from './repositories/ownerClaim.repository';
 import { OwnerClaim } from './entities/ownerClaim.entity';
+import { PostCreatedListener } from './listeners/post-created.lintener';
+import { PostNotifySimilarListener } from './listeners/post-notify-similar.listener';
 
 @Module({
-  imports: [SequelizeModule.forFeature([Post, PostImage, Category, SubCategory, PostDistrict, OwnerClaim]),
+  imports: [
+    SequelizeModule.forFeature([Post, PostImage, Category, SubCategory, PostDistrict, OwnerClaim]),
     AuthModule,
-    LocationModule
+    LocationModule,
   ],
   exports: [PostService],
   controllers: [PostController],
-  providers: [PostService, OwnerClaimRepositoy, PostRepository, PostDistricRepository, PostImageRepository, ],
+  providers: [
+    PostService,
+    OwnerClaimRepositoy,
+    PostRepository,
+    PostDistricRepository,
+    PostImageRepository,
+    PostCreatedListener,
+    PostNotifySimilarListener,
+  ],
 })
-export class PostModule { }
+export class PostModule {}
