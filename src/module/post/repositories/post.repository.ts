@@ -11,6 +11,7 @@ import { Includeable, Op, WhereOptions } from 'sequelize';
 import { PostDistrict } from '../entities/postDistrict.entity';
 import sequelize from 'sequelize/lib/sequelize';
 import { User } from 'src/module/auth/entities/user.entity';
+import { PostRejection } from '../entities/postRejection.entity';
 
 @Injectable()
 export class PostRepository {
@@ -508,5 +509,106 @@ export class PostRepository {
         { model: User, as: 'owner', attributes: ['email'] },
       ],
     });
+  }
+
+  // async getRecommendedPost(id: number, subCategoryId: number, districtIds: number[], type: PostType) {
+  //   return await this.postModel.findAll({
+  //     where: {subCategoryId, type, id: { [Op.ne]: id}, status: PostStatus.APPROVED},
+  //     attributes:
+  //   })
+  // }
+
+  async getLastApprovedUserPosts(userId: number): Promise<Post[]> {
+    return await this.postModel.findAll({
+      where: { userId, status: PostStatus.APPROVED },
+      attributes: ['id', 'createdAt', 'subCategoryId'],
+      include: [
+        {
+          model: District,
+          as: 'districts',
+          through: { attributes: [] },
+          attributes: ['id'],
+          required: true,
+        },
+      ],
+      limit: 3,
+      order: [['createdAt', 'DESC']],
+    });
+  }
+
+  async getPostsWithUserId(userId: number) {
+    return await this.postModel.findAll({
+      where: { userId },
+      attributes: ['id', 'title', 'status', 'type', 'createdAt', 'mainImage'],
+      include: [
+        {
+          model: District,
+          through: { attributes: [] },
+          attributes: ['districtName'],
+          required: true,
+        },
+      ],
+    });
+  }
+
+  async getMyPost(id: number) {
+    return await this.postModel.findOne({
+      where: { id },
+      attributes: [
+        'id',
+        'title',
+        'description',
+        'type',
+        'status',
+        'mainImage',
+        'rewardAmount',
+        'hidePhoneNumber',
+        'userId',
+        'createdAt',
+      ],
+      include: [
+        {
+          model: District,
+          through: { attributes: [] },
+          required: true,
+          attributes: ['districtName'],
+          include: [
+            {
+              model: Province,
+              required: true,
+              attributes: ['provinceName'],
+            },
+          ],
+        },
+        {
+          model: SubCategory,
+          attributes: ['subCategoryName'],
+          required: true,
+          include: [
+            {
+              model: Category,
+              required: true,
+              attributes: ['categoryName'],
+            },
+          ],
+        },
+        {
+          model: PostImage,
+          required: false,
+          attributes: ['imageUrl'],
+        },
+        {
+          model: PostRejection,
+          required: false,
+          attributes: ['reason', 'createdAt'],
+          separate: true,
+          order: [['createdAt', 'DESC']],
+        },
+      ],
+    });
+  }
+
+  async delete(id: number) {
+    return await this.postModel.destroy({ where: { id } });
   }
 }

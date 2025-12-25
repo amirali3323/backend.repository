@@ -1,6 +1,6 @@
-import { PostStatus } from 'src/common/enums';
+// import { PostStatus } from 'src/common/enums';
 
-export interface PostStats {
-  status: PostStatus;
-  count: number;
-}
+// export interface PostStats {
+//   status: PostStatus;
+//   count: number;
+// }

@@ -12,6 +12,7 @@ import {
   Query,
   UploadedFile,
   Res,
+  Delete,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { RoleGuard } from 'src/common/guards/role.guard';
@@ -52,17 +53,26 @@ export class PostController {
     return await this.postService.getList(query);
   }
 
+  @Get('me/:postId')
+  @UseGuards(RoleGuard)
+  @Roles('user', 'admin')
+  async getMyPost(@Param('postId') postId: number, @Req() req: any) {
+    return await this.postService.getMyPost(postId, req.user.id);
+  }
+
+  @Get('me')
+  @UseGuards(RoleGuard)
+  @Roles('user', 'admin')
+  async getMyPosts(@Req() req: any) {
+    return await this.postService.getMyPosts(req.user.id);
+  }
+
   /** Create a new post with uploaded images (User only) */
   @Post('createPost')
   @UseGuards(RoleGuard)
   @Roles('user', 'admin')
   @UseInterceptors(FilesInterceptor('images', 10, createMulterConfig('./uploads/postImages')))
-  async createPost(
-    @Body() body: CreatePostDto,
-    @UploadedFiles() images: Express.Multer.File[],
-    @Req() req: any,
-  ) {
-
+  async createPost(@Body() body: CreatePostDto, @UploadedFiles() images: Express.Multer.File[], @Req() req: any) {
     const imageNames = images?.map((img) => img.filename) || [];
     body.mainImage = imageNames[body.featuredImageIndex];
     const extraImages = [...imageNames];
@@ -70,6 +80,21 @@ export class PostController {
     body.extraImages = extraImages;
     return await this.postService.createPost(body, req.user.id);
   }
+
+  @Delete('delete/:postId')
+  @UseGuards(RoleGuard)
+  @Roles('user', 'admin')
+  async deletePost(@Req() req: any, @Param('postId') postId: number) {
+    return await this.postService.deletePost(postId, req.user.id)
+  }
+
+  // @Get('recommended')
+  // @UseGuards(RoleGuard)
+  // @Roles('user', 'admin')
+  // async getRecommended(@Req() req: any) {
+  //   console.log('in controller')
+  //   return await this.postService.getRecommendedPosts(req?.user.id);
+  // }
 
   /** Get detailed post info by ID (accessible to all, including guests) */
   @UseGuards(OptionalGuard)

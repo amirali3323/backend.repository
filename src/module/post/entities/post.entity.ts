@@ -7,6 +7,7 @@ import { SubCategory } from './subCategory.entity';
 import { OwnerClaim } from './ownerClaim.entity';
 import { PostStatus } from 'src/common/enums/post-status.enum';
 import { PostType } from 'src/common/enums/post-type.enum';
+import { PostRejection } from './postRejection.entity';
 
 @Table({ tableName: 'Posts' })
 export class Post extends Model<
@@ -88,7 +89,7 @@ export class Post extends Model<
   declare userId: number;
 
   /** Districts related to this post */
-  @BelongsToMany(() => District, () => PostDistrict)
+  @BelongsToMany(() => District, () => PostDistrict, )
   declare districts: District[];
 
   /** The subcategory this post belongs to */
@@ -102,4 +103,7 @@ export class Post extends Model<
 
   @BelongsToMany(() => User, () => OwnerClaim, 'ownerClaims')
   declare claiments: User[];
+
+  @HasMany(() => PostRejection)
+  declare reason: PostRejection;
 }

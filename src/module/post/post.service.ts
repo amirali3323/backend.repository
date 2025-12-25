@@ -2,7 +2,7 @@ import { ConflictException, HttpStatus, Injectable } from '@nestjs/common';
 import { PostRepository } from './repositories/post.repository';
 import { CreatePostDto } from './dto/createPost.dto';
 import { AuthService } from '../auth/auth.service';
-import { NotFoundException } from 'src/common/exceptions';
+import { ForbiddenException, NotFoundException } from 'src/common/exceptions';
 import { ErrorCode } from 'src/common/enums/error-code.enum';
 import { PostStatus, PostType } from 'src/common/enums';
 import { PostImageRepository } from './repositories/postImages.repository';
@@ -19,6 +19,9 @@ import { AdminPostDetailDto } from '../admin/dto/admin-post-detail.dto';
 import { UpdateStatusDto } from '../admin/dto/updateStatus.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Post } from './entities/post.entity';
+import { PostsOutputDto } from './dto/postsOutput.dto';
+import { PostOutputDto } from './dto/postOutput.dto';
+import { PostRejectionRepository } from './repositories/postRejection.repository';
 @Injectable()
 export class PostService {
   constructor(
@@ -26,6 +29,7 @@ export class PostService {
     private readonly postImageRepository: PostImageRepository,
     private readonly postDistricRepository: PostDistricRepository,
     private readonly ownerClaimRepository: OwnerClaimRepositoy,
+    private readonly postRejectionRepository: PostRejectionRepository,
     private readonly authService: AuthService,
     private readonly mailService: MailService,
     private readonly eventEmmiter: EventEmitter2,
@@ -213,6 +217,9 @@ export class PostService {
     if (!post) throw new NotFoundException('post not found', ErrorCode.POST_NOT_FOUND);
 
     await this.postRepository.updateStatus(postId, status);
+    if (message && message !== '') {
+      this.postRejectionRepository.create({ reason: message, postId: post.id });
+    }
     this.mailService.sendPostStatusChangedEmail(post.owner.email, post.title, post.status, message);
 
     if (status.toUpperCase() === PostStatus.APPROVED) {
@@ -227,5 +234,62 @@ export class PostService {
     if (post.type === PostType.LOST)
       return await this.postRepository.findSimilarPostById(post.id, post.subCategoryId, districtIds, PostType.FOUND);
     return await this.postRepository.findSimilarPostById(post.id, post.subCategoryId, districtIds, PostType.LOST);
+  }
+
+  async getRecommendedPosts(userId: number) {
+    console.log('in service');
+    console.log(userId);
+    const lastPosts = await this.postRepository.getLastApprovedUserPosts(userId);
+    console.log(1);
+    const recommendedMap = new Map<number, Post>();
+    console.log(lastPosts);
+    console.log('-------------------------------------');
+    // console.log(recommendedMap)
+    for (const post of lastPosts) {
+      const districtIds = post.districts?.map((d) => d.id) || [];
+      console.log(districtIds);
+      const oppositeType = post.type === PostType.LOST ? PostType.LOST : PostType.FOUND;
+      console.log(oppositeType);
+      const similarPosts = await this.postRepository.findSimilarPostById(
+        post.id,
+        post.subCategoryId,
+        districtIds,
+        oppositeType,
+      );
+      console.log(similarPosts);
+
+      for (const similar of similarPosts) {
+        if (!recommendedMap.has(similar.id)) {
+          recommendedMap.set(similar.id, similar);
+        }
+      }
+    }
+    return Array.from(recommendedMap.values()).slice(0, 20);
+  }
+
+  async getMyPosts(id: number) {
+    const posts = await this.postRepository.getPostsWithUserId(id);
+    return plainToInstance(PostsOutputDto, posts, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async getMyPost(postId: number, userId: number) {
+    const post = await this.postRepository.getMyPost(postId);
+    if (!post) throw new NotFoundException('post not found', ErrorCode.POST_NOT_FOUND);
+    if (post.userId !== userId) throw new NotFoundException('post not found', ErrorCode.POST_NOT_FOUND);
+
+    return plainToInstance(PostOutputDto, post, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async deletePost(postId: number, userId: number) {
+    const post = await this.postRepository.getPost(postId);
+    if (!post) throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
+    if (post.userId !== userId)
+      throw new ForbiddenException('You are not allowed to delete this post', ErrorCode.POST_DELETE_FORBIDDEN);
+    await this.postRepository.delete(post.id);
+    return 'delete successfully';
   }
 }

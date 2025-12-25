@@ -16,10 +16,12 @@ import { OwnerClaimRepositoy } from './repositories/ownerClaim.repository';
 import { OwnerClaim } from './entities/ownerClaim.entity';
 import { PostCreatedListener } from './listeners/post-created.lintener';
 import { PostNotifySimilarListener } from './listeners/post-notify-similar.listener';
+import { PostRejection } from './entities/postRejection.entity';
+import { PostRejectionRepository } from './repositories/postRejection.repository';
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([Post, PostImage, Category, SubCategory, PostDistrict, OwnerClaim]),
+    SequelizeModule.forFeature([Post, PostImage, Category, SubCategory, PostDistrict, OwnerClaim, PostRejection]),
     AuthModule,
     LocationModule,
   ],
@@ -33,6 +35,7 @@ import { PostNotifySimilarListener } from './listeners/post-notify-similar.liste
     PostImageRepository,
     PostCreatedListener,
     PostNotifySimilarListener,
+    PostRejectionRepository
   ],
 })
 export class PostModule {}
