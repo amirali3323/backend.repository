@@ -67,7 +67,7 @@ The backend follows **NestJS modular architecture** best practices and provides 
 ---
 
 ## 🛢️ Environment Variables
-
+```
 Create a `.env` file:
 
 DB_HOST=localhost
@@ -87,7 +87,7 @@ MAIL_USER=example@gmail.com
 MAIL_PASS=examplepassword123
 
 FRONT_ORIGIN=http://localhost:3000
-
+```
 
 ---
 
