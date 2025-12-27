@@ -62,4 +62,12 @@ export const POST_STATUS_EMAIL_TEMPLATES: Record<PostStatus, PostEmailTemplate> 
       </div>
     `,
   },
+  [PostStatus.DELETED]: {
+    subject: function (title: string): string {
+      throw new Error('Function not implemented.');
+    },
+    html: function (title: string, message?: string): string {
+      throw new Error('Function not implemented.');
+    }
+  }
 };

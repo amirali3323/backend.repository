@@ -35,6 +35,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
         autoLoadModels: true,
         synchronize: true,
         logging: false,
+
       }),
       inject: [ConfigService],
     }),

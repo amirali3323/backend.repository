@@ -37,7 +37,7 @@ export class PostOutputDto {
       provinceName: d.province.provinceName,
     })),
   )
-  districts: locationOutPutDto[];
+  location: locationOutPutDto[];
 
   @Expose()
   @Transform(({ obj }) => obj.subCategory?.subCategoryName ?? null)

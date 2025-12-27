@@ -22,6 +22,9 @@ import { Post } from './entities/post.entity';
 import { PostsOutputDto } from './dto/postsOutput.dto';
 import { PostOutputDto } from './dto/postOutput.dto';
 import { PostRejectionRepository } from './repositories/postRejection.repository';
+import { PostDeletionLogsRepository } from './repositories/postDeletionLogs.repository';
+import { DeletionReason } from 'src/common/enums/deletion-reason.enum';
+import { DeletePostDto } from './dto/deletePost.dto';
 @Injectable()
 export class PostService {
   constructor(
@@ -30,6 +33,7 @@ export class PostService {
     private readonly postDistricRepository: PostDistricRepository,
     private readonly ownerClaimRepository: OwnerClaimRepositoy,
     private readonly postRejectionRepository: PostRejectionRepository,
+    private readonly postDeletionLogsRepository: PostDeletionLogsRepository,
     private readonly authService: AuthService,
     private readonly mailService: MailService,
     private readonly eventEmmiter: EventEmitter2,
@@ -86,7 +90,7 @@ export class PostService {
   /** Get detailed post data (visible to owner or if approved) */
   async getPost(id: number, userId?: number) {
     const post = await this.postRepository.getPost(id);
-    if (!post) {
+    if (!post || post.status === PostStatus.DELETED) {
       throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
     }
 
@@ -114,7 +118,7 @@ export class PostService {
     const { claimImage, message } = body;
 
     const exsistPost = await this.postRepository.getPost(postId);
-    if (!exsistPost || exsistPost.status !== PostStatus.APPROVED)
+    if (!exsistPost || exsistPost.status === PostStatus.DELETED || exsistPost.status !== PostStatus.APPROVED)
       throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
 
     const hasClaimed = await this.ownerClaimRepository.hasClaimed(postId, claimantId);
@@ -151,7 +155,7 @@ export class PostService {
   /** Get owner phone number (only if post is approved) */
   async getPhoneNumber(postId) {
     const post = await this.postRepository.getPost(postId);
-    if (!post || post.status !== PostStatus.APPROVED)
+    if (!post || post.status === PostStatus.DELETED || post.status !== PostStatus.APPROVED)
       throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
 
     const phoneNumber = await this.authService.getPhoneNumber(post.userId);
@@ -192,6 +196,7 @@ export class PostService {
   }
 
   async getPostByStatus(offset: number, status?: PostStatus, userId?: number) {
+    if (status === PostStatus.DELETED) throw new NotFoundException('post not found', ErrorCode.POST_NOT_FOUND);
     const Posts = await this.postRepository.getPostsByStatus(offset, status);
     return Posts.map((post) => ({
       ...post.get({ plain: true }),
@@ -237,26 +242,17 @@ export class PostService {
   }
 
   async getRecommendedPosts(userId: number) {
-    console.log('in service');
-    console.log(userId);
     const lastPosts = await this.postRepository.getLastApprovedUserPosts(userId);
-    console.log(1);
     const recommendedMap = new Map<number, Post>();
-    console.log(lastPosts);
-    console.log('-------------------------------------');
-    // console.log(recommendedMap)
     for (const post of lastPosts) {
       const districtIds = post.districts?.map((d) => d.id) || [];
-      console.log(districtIds);
       const oppositeType = post.type === PostType.LOST ? PostType.LOST : PostType.FOUND;
-      console.log(oppositeType);
       const similarPosts = await this.postRepository.findSimilarPostById(
         post.id,
         post.subCategoryId,
         districtIds,
         oppositeType,
       );
-      console.log(similarPosts);
 
       for (const similar of similarPosts) {
         if (!recommendedMap.has(similar.id)) {
@@ -284,12 +280,21 @@ export class PostService {
     });
   }
 
-  async deletePost(postId: number, userId: number) {
+  async deletePost(postId: number, userId: number, body: DeletePostDto) {
+    const { reason } = body;
     const post = await this.postRepository.getPost(postId);
-    if (!post) throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
+    if (!post || post.status === PostStatus.DELETED)
+      throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
     if (post.userId !== userId)
       throw new ForbiddenException('You are not allowed to delete this post', ErrorCode.POST_DELETE_FORBIDDEN);
+
+    await this.postDeletionLogsRepository.create({ postId, reason });
+
+    if (reason === DeletionReason.FOUND_VIA_US) {
+      await this.postRepository.updateStatus(postId, PostStatus.RESOLVED);
+      return 'Success! Post marked as resolved.';
+    }
     await this.postRepository.delete(post.id);
-    return 'delete successfully';
+    return 'Post deleted successfully';
   }
 }

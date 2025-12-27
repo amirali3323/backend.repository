@@ -1,4 +1,14 @@
-import { Table, Column, Model, DataType, HasMany, BelongsTo, ForeignKey, BelongsToMany } from 'sequelize-typescript';
+import {
+  Table,
+  Column,
+  Model,
+  DataType,
+  HasMany,
+  BelongsTo,
+  ForeignKey,
+  BelongsToMany,
+  HasOne,
+} from 'sequelize-typescript';
 import { User } from 'src/module/auth/entities/user.entity';
 import { District } from 'src/module/location/entities/district.entity';
 import { PostDistrict } from './postDistrict.entity';
@@ -8,6 +18,7 @@ import { OwnerClaim } from './ownerClaim.entity';
 import { PostStatus } from 'src/common/enums/post-status.enum';
 import { PostType } from 'src/common/enums/post-type.enum';
 import { PostRejection } from './postRejection.entity';
+import { PostDeletionLogs } from './postDeletionLogs.entity';
 
 @Table({ tableName: 'Posts' })
 export class Post extends Model<
@@ -89,7 +100,7 @@ export class Post extends Model<
   declare userId: number;
 
   /** Districts related to this post */
-  @BelongsToMany(() => District, () => PostDistrict, )
+  @BelongsToMany(() => District, () => PostDistrict)
   declare districts: District[];
 
   /** The subcategory this post belongs to */
@@ -106,4 +117,7 @@ export class Post extends Model<
 
   @HasMany(() => PostRejection)
   declare reason: PostRejection;
+
+  @HasOne(() => PostDeletionLogs)
+  deletionLog: PostDeletionLogs;
 }

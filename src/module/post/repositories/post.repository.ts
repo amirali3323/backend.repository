@@ -368,6 +368,7 @@ export class PostRepository {
   /** Get post counts grouped by status */
   async getPostStatsByStatus(): Promise<any> {
     return await this.postModel.findAll({
+      where: { status: { [Op.ne]: PostStatus.DELETED } },
       attributes: ['status', [sequelize.fn('COUNT', sequelize.col('status')), 'count']],
       group: ['status'],
       raw: true,
@@ -402,6 +403,7 @@ export class PostRepository {
   /** Get post counts grouped by type (LOST / FOUND) */
   async getPostCountByType(): Promise<any> {
     return await this.postModel.findAll({
+      where: { status: { [Op.ne]: PostStatus.DELETED } },
       attributes: ['type', [sequelize.fn('COUNT', sequelize.col('type')), 'count']],
       group: ['type'],
       raw: true,
@@ -436,7 +438,7 @@ export class PostRepository {
   /** Get full post details including owner, districts, images, and category */
   async getPostWithUser(id: number): Promise<Post | null> {
     return await this.postModel.findOne({
-      where: { id },
+      where: { id, status: { [Op.ne]: PostStatus.DELETED } },
       attributes: [
         'id',
         'title',
@@ -538,7 +540,7 @@ export class PostRepository {
 
   async getPostsWithUserId(userId: number) {
     return await this.postModel.findAll({
-      where: { userId },
+      where: { userId, status: { [Op.ne]: PostStatus.DELETED } },
       attributes: ['id', 'title', 'status', 'type', 'createdAt', 'mainImage'],
       include: [
         {
@@ -553,7 +555,7 @@ export class PostRepository {
 
   async getMyPost(id: number) {
     return await this.postModel.findOne({
-      where: { id },
+      where: { id, status: { [Op.ne]: PostStatus.DELETED } },
       attributes: [
         'id',
         'title',
@@ -609,6 +611,6 @@ export class PostRepository {
   }
 
   async delete(id: number) {
-    return await this.postModel.destroy({ where: { id } });
+    return await this.postModel.update({ status: PostStatus.DELETED }, { where: { id } });
   }
 }

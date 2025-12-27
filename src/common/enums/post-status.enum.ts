@@ -3,4 +3,5 @@ export enum PostStatus {
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
   RESOLVED = 'RESOLVED',
+  DELETED = 'DELETED',
 }

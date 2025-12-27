@@ -18,10 +18,21 @@ import { PostCreatedListener } from './listeners/post-created.lintener';
 import { PostNotifySimilarListener } from './listeners/post-notify-similar.listener';
 import { PostRejection } from './entities/postRejection.entity';
 import { PostRejectionRepository } from './repositories/postRejection.repository';
+import { PostDeletionLogsRepository } from './repositories/postDeletionLogs.repository';
+import { PostDeletionLogs } from './entities/postDeletionLogs.entity';
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([Post, PostImage, Category, SubCategory, PostDistrict, OwnerClaim, PostRejection]),
+    SequelizeModule.forFeature([
+      Post,
+      PostImage,
+      Category,
+      SubCategory,
+      PostDistrict,
+      OwnerClaim,
+      PostRejection,
+      PostDeletionLogs,
+    ]),
     AuthModule,
     LocationModule,
   ],
@@ -35,7 +46,8 @@ import { PostRejectionRepository } from './repositories/postRejection.repository
     PostImageRepository,
     PostCreatedListener,
     PostNotifySimilarListener,
-    PostRejectionRepository
+    PostRejectionRepository,
+    PostDeletionLogsRepository,
   ],
 })
 export class PostModule {}

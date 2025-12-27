@@ -27,6 +27,8 @@ import type { Response } from 'express';
 import { NotFoundException } from 'src/common/exceptions';
 import { ErrorCode } from 'src/common/enums';
 import { AuthService } from '../auth/auth.service';
+import { DeletionReason } from 'src/common/enums/deletion-reason.enum';
+import { DeletePostDto } from './dto/deletePost.dto';
 
 @Controller('api/post')
 export class PostController {
@@ -81,11 +83,11 @@ export class PostController {
     return await this.postService.createPost(body, req.user.id);
   }
 
-  @Delete('delete/:postId')
+  @Post(':postId/delete')
   @UseGuards(RoleGuard)
   @Roles('user', 'admin')
-  async deletePost(@Req() req: any, @Param('postId') postId: number) {
-    return await this.postService.deletePost(postId, req.user.id)
+  async deletePost(@Req() req: any, @Param('postId') postId: number, @Body() body: DeletePostDto) {
+    return await this.postService.deletePost(postId, req.user.id, body);
   }
 
   // @Get('recommended')
