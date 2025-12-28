@@ -52,6 +52,12 @@ export class PostOutputDto {
   images: { src: string }[];
 
   @Expose()
-  @Transform(({ obj }) => (obj.status === PostStatus.REJECTED ? obj.postRejections?.[0]?.reason : null))
+  @Transform(({ obj }) => {
+    if (obj.status === PostStatus.REJECTED) {
+      const rejection = obj.reason?.[0];
+      return rejection?.dataValues?.reason || rejection?.reason || null;
+    }
+    return null;
+  })
   rejectionReason: string;
 }

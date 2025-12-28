@@ -274,7 +274,7 @@ export class PostService {
     const post = await this.postRepository.getMyPost(postId);
     if (!post) throw new NotFoundException('post not found', ErrorCode.POST_NOT_FOUND);
     if (post.userId !== userId) throw new NotFoundException('post not found', ErrorCode.POST_NOT_FOUND);
-
+    console.log(post)
     return plainToInstance(PostOutputDto, post, {
       excludeExtraneousValues: true,
     });
