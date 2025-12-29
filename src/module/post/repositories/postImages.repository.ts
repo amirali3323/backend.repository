@@ -14,4 +14,12 @@ export class PostImageRepository {
   async create(imageUrl: string, postId: number) {
     return await this.postImageModel.create({ imageUrl, postId });
   }
+
+  async findAllByPostId(postId: number): Promise<PostImage[]> {
+    return await this.postImageModel.findAll({ where: { postId } });
+  }
+
+  async deleteByPostId(postId: number) {
+    return await this.postImageModel.destroy({ where: { postId } });
+  }
 }

@@ -14,4 +14,8 @@ export class PostDistricRepository {
   async create(postId: number, districtId: number) {
     return await this.postDistricModel.create({ postId, districtId });
   }
+
+  async deleteByPostId(postId: number) {
+    return await this.postDistricModel.destroy({ where: { postId } });
+  }
 }

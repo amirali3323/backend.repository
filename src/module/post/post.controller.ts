@@ -29,6 +29,7 @@ import { ErrorCode } from 'src/common/enums';
 import { AuthService } from '../auth/auth.service';
 import { DeletionReason } from 'src/common/enums/deletion-reason.enum';
 import { DeletePostDto } from './dto/deletePost.dto';
+import { UpdatePostDto } from './dto/updatePost.dto';
 
 @Controller('api/post')
 export class PostController {
@@ -81,6 +82,39 @@ export class PostController {
     extraImages.splice(body.featuredImageIndex, 1);
     body.extraImages = extraImages;
     return await this.postService.createPost(body, req.user.id);
+  }
+
+  @Post('update/:id')
+  @UseGuards(RoleGuard)
+  @Roles('user', 'admin')
+  @UseInterceptors(FilesInterceptor('images', 10, createMulterConfig('./uploads/postImages')))
+  async updatePost(
+    @Param('id') id: number,
+    @Body() body: UpdatePostDto,
+    @UploadedFiles() newFiles: Express.Multer.File[],
+    @Req() req: any,
+  ) {
+    const newFileNames = newFiles?.map((img) => img.filename) || [];
+
+    // ۱. دریافت نام عکس‌های قدیمی که کاربر در فرم نگه داشته است
+    // نکته: فرانت‌اند باید نام فایل‌هایی که از قبل در دیتابیس بوده و حذف نکرده را بفرستد
+    const existingImages = Array.isArray(body.extraImages) ? body.extraImages : [body.extraImages].filter(Boolean);
+
+    // ۲. ساختن آرایه کامل تصاویر (ترکیب موجودها و جدیدها)
+    // ترتیب در اینجا حیاتی است چون featuredImageIndex بر اساس این آرایه است
+    const allImages = [...existingImages, ...newFileNames];
+
+    if (allImages.length > 0) {
+      // ۳. استخراج عکس شاخص بر اساس ایندکس ارسالی
+      const mainImgName = allImages[body.featuredImageIndex];
+      body.mainImage = mainImgName;
+
+      // ۴. بقیه عکس‌ها به عنوان extraImages (به جز عکس شاخص)
+      const remainingImages = allImages.filter((name) => name !== mainImgName);
+      body.extraImages = remainingImages;
+    }
+
+    return await this.postService.updatePost(id, body, req.user.id);
   }
 
   @Post(':postId/delete')
@@ -150,8 +184,8 @@ export class PostController {
   @Get('phoneNumber/:postId')
   @UseGuards(RoleGuard)
   @Roles('user', 'admin')
-  async getPhoneNumber(@Param('postId') postId: number) {
-    const post = await this.postService.getPost(postId);
+  async getPhoneNumber(@Param('postId') postId: number, @Req() req: any) {
+    const post = await this.postService.getPost(postId, req?.user.id);
     if (!post) throw new NotFoundException('Post not found', ErrorCode.POST_NOT_FOUND);
     if (post.hidePhoneNumber) return null;
     const phoneNumber = await this.authService.getPhoneNumber(post.userId);

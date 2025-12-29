@@ -28,6 +28,10 @@ export class PostRepository {
     private postDistricModel: typeof PostDistrict,
     // private sequelize: Sequelize,
   ) {}
+
+  async findByPk(id: number): Promise<Post | null>{
+    return await this.postModel.findByPk(id);
+  }
   /** Find a subcategory by its name and parent category name */
   async findSubCategoryByName(categoryName: string, subCategoryName: string) {
     return await this.subCategoryModel.findOne({

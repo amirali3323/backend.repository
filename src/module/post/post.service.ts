@@ -25,6 +25,7 @@ import { PostRejectionRepository } from './repositories/postRejection.repository
 import { PostDeletionLogsRepository } from './repositories/postDeletionLogs.repository';
 import { DeletionReason } from 'src/common/enums/deletion-reason.enum';
 import { DeletePostDto } from './dto/deletePost.dto';
+import { UpdatePostDto } from './dto/updatePost.dto';
 @Injectable()
 export class PostService {
   constructor(
@@ -38,6 +39,23 @@ export class PostService {
     private readonly mailService: MailService,
     private readonly eventEmmiter: EventEmitter2,
   ) {}
+
+  private deleteFileFromDisk(filename: string) {
+    if (!filename) return;
+
+    // چون در کنترلر مسیر را './uploads/postImages' دادی، اینجا هم از همان استفاده می‌کنیم
+    const filePath = path.resolve('./uploads/postImages', filename);
+
+    try {
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        // console.log(`فایل حذف شد: ${filename}`);
+      }
+    } catch (err) {
+      // فقط لاگ می‌گیریم تا اگر فایل قفل بود یا مشکلی داشت، کل پروسه آپدیت متوقف نشود
+      console.error(`عدم دسترسی به فایل برای حذف: ${filename}`, err);
+    }
+  }
 
   /** Seed database with default categories and subcategories */
   async seedCategoriesAndSubCategories() {
@@ -274,10 +292,74 @@ export class PostService {
     const post = await this.postRepository.getMyPost(postId);
     if (!post) throw new NotFoundException('post not found', ErrorCode.POST_NOT_FOUND);
     if (post.userId !== userId) throw new NotFoundException('post not found', ErrorCode.POST_NOT_FOUND);
-    console.log(post)
     return plainToInstance(PostOutputDto, post, {
       excludeExtraneousValues: true,
     });
+  }
+
+  async updatePost(postId: number, body: UpdatePostDto, userId: number) {
+    const {
+      title,
+      description,
+      type,
+      mainImage,
+      extraImages, // این آرایه شامل عکس‌های قدیمی باقی‌مانده + عکس‌های جدید (منهای شاخص) است
+      districtIds,
+      subCategoryId,
+      hidePhoneNumber,
+      rewardAmount,
+    } = body;
+
+    // ۱. پیدا کردن پست و اطمینان از مالکیت کاربر
+    const post = await this.postRepository.findByPk(postId); // یا متد مشابه در ریپازیتوری شما
+    if (!post || post.userId !== userId) {
+      throw new NotFoundException('Post not found or access denied', ErrorCode.POST_NOT_FOUND);
+    }
+
+    // ۲. مدیریت فایل‌های فیزیکی (پاک کردن عکس‌هایی که دیگر نیستند)
+    const currentExtraImages = await this.postImageRepository.findAllByPostId(postId);
+    // const oldFiles = [post.mainImage, ...currentExtraImages.map((img) => img.file_name)];
+    const oldFiles = [
+      post.mainImage,
+      ...post.images.map((img) => img.imageUrl), // تغییر از file_name به imageUrl
+    ].filter(Boolean);
+    const newFiles = [mainImage, ...extraImages];
+
+    const filesToDelete = oldFiles.filter((file) => file && !newFiles.includes(file));
+    filesToDelete.forEach((filename) => this.deleteFileFromDisk(filename));
+
+    // ۳. آپدیت جدول اصلی Posts
+    await post.update({
+      title,
+      description,
+      type,
+      mainImage, // عکس شاخص جدید (یا قدیمیِ انتخاب شده)
+      subCategoryId,
+      hidePhoneNumber,
+      rewardAmount,
+      status: PostStatus.PENDING, // معمولاً بعد از ادیت، پست دوباره باید تایید شود
+    });
+
+    // ۴. بروزرسانی عکس‌های اضافی (Extra Images)
+    // ابتدا قبلی‌ها را پاک می‌کنیم
+    await this.postImageRepository.deleteByPostId(postId);
+    // سپس لیست جدید را ذخیره می‌کنیم
+    for (const imageUrl of extraImages) {
+      await this.postImageRepository.create(imageUrl, postId);
+    }
+
+    // ۵. بروزرسانی مناطق (Districts)
+    // ابتدا رابطه‌های قبلی را پاک می‌کنیم
+    await this.postDistricRepository.deleteByPostId(postId);
+    // سپس مناطق جدید را لینک می‌کنیم
+    for (const districtId of districtIds) {
+      await this.postDistricRepository.create(postId, districtId);
+    }
+
+    // ۶. ارسال ایمیل یا رویداد (اختیاری)
+    this.eventEmmiter.emit('post.updated', { userId, type, title });
+
+    return { message: 'Updated post successfully' };
   }
 
   async deletePost(postId: number, userId: number, body: DeletePostDto) {

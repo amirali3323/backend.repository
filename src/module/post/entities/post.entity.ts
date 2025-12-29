@@ -76,7 +76,7 @@ export class Post extends Model<
     type: DataType.STRING,
     allowNull: true,
   })
-  declare rewardAmount: number | null;
+  declare rewardAmount: string | null;
 
   /** Related images of the post */
   @HasMany(() => PostImage)
